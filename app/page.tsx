@@ -8,10 +8,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Scale, FileText, MessageSquare, Shield, Sparkles, Users } from "lucide-react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/hooks/use-language";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { data: session, status } = useSession()
   const { t } = useLanguage()
+  const [scrollY, setScrollY] = useState(0)
+  
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
   
   const getInitials = (name: string) => {
     return name
@@ -23,9 +32,42 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute -top-1/2 -left-1/2 w-full h-full bg-blue-500/10 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-purple-500/10 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [90, 0, 90],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+      </div>
+
       {/* Header */}
-      <header className="border-b bg-white/50 backdrop-blur-sm dark:bg-gray-900/50">
+      <motion.header 
+        className="border-b border-white/10 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Scale className="h-8 w-8 text-blue-600" />
@@ -59,10 +101,16 @@ export default function Home() {
             )}
           </nav>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
+      <motion.section 
+        className="container mx-auto px-4 py-20 text-center relative z-10"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        style={{ transform: `translateY(${scrollY * 0.5}px)` }}
+      >
         <div className="mx-auto max-w-3xl">
           <div className="mb-6 flex justify-center">
             <div className="rounded-full bg-blue-100 p-4 dark:bg-blue-900">

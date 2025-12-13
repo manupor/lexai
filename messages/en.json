@@ -77,7 +77,7 @@
     }
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Talk to Me",
     "newChat": "New Query",
     "recentConversations": "Recent Conversations",
     "uploadDocument": "Upload Document",

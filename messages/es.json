@@ -7,6 +7,7 @@
     "title": "Asistente Legal Inteligente para Costa Rica",
     "subtitle": "Consulta leyes, analiza documentos y obtén respuestas precisas basadas en el sistema jurídico costarricense",
     "cta": "Comenzar Ahora",
+    "demo": "Ver Demo",
     "features": {
       "title": "Características Principales",
       "chat": {
@@ -21,13 +22,17 @@
         "title": "Búsqueda en Códigos",
         "description": "Acceso directo a Código Civil, Código de Comercio y otras leyes de Costa Rica"
       },
-      "voice": {
-        "title": "Consultas por Voz",
-        "description": "Realiza consultas legales usando tu voz para mayor comodidad"
+      "appeals": {
+        "title": "Generación de Apelaciones",
+        "description": "Crea apelaciones y opiniones legales fundamentadas en la legislación vigente"
       },
-      "citations": {
-        "title": "Citas Precisas",
-        "description": "Todas las respuestas incluyen referencias exactas a artículos y leyes aplicables"
+      "complete": {
+        "title": "Base Legal Completa",
+        "description": "Acceso a todas las leyes de Costa Rica: Civil, Penal, Tránsito, Laboral y más"
+      },
+      "clients": {
+        "title": "Para Abogados y Clientes",
+        "description": "Interfaz adaptada tanto para profesionales del derecho como para clientes"
       },
       "tokens": {
         "title": "Sistema de Tokens",
@@ -56,12 +61,12 @@
         "cta": "Suscribirse"
       },
       "enterprise": {
-        "title": "Empresarial",
-        "description": "Para bufetes y empresas",
-        "price": "Personalizado",
-        "feature1": "Tokens ilimitados",
-        "feature2": "API dedicada",
-        "feature3": "Integración personalizada",
+        "title": "Empresa",
+        "description": "Para bufetes y equipos",
+        "price": "/mes",
+        "feature1": "tokens/mes",
+        "feature2": "Usuarios ilimitados",
+        "feature3": "API personalizada",
         "feature4": "Soporte dedicado",
         "cta": "Contactar"
       }

@@ -7,6 +7,7 @@
     "title": "Intelligent Legal Assistant for Costa Rica",
     "subtitle": "Consult laws, analyze documents and get accurate answers based on the Costa Rican legal system",
     "cta": "Get Started",
+    "demo": "View Demo",
     "features": {
       "title": "Key Features",
       "chat": {
@@ -21,13 +22,17 @@
         "title": "Code Search",
         "description": "Direct access to Civil Code, Commercial Code and other Costa Rican laws"
       },
-      "voice": {
-        "title": "Voice Queries",
-        "description": "Make legal queries using your voice for greater convenience"
+      "appeals": {
+        "title": "Appeals Generation",
+        "description": "Create appeals and legal opinions based on current legislation"
       },
-      "citations": {
-        "title": "Accurate Citations",
-        "description": "All answers include exact references to applicable articles and laws"
+      "complete": {
+        "title": "Complete Legal Base",
+        "description": "Access to all Costa Rican laws: Civil, Criminal, Traffic, Labor and more"
+      },
+      "clients": {
+        "title": "For Lawyers and Clients",
+        "description": "Interface adapted for both legal professionals and clients"
       },
       "tokens": {
         "title": "Token System",
@@ -57,11 +62,11 @@
       },
       "enterprise": {
         "title": "Enterprise",
-        "description": "For law firms and companies",
-        "price": "Custom",
-        "feature1": "Unlimited tokens",
-        "feature2": "Dedicated API",
-        "feature3": "Custom integration",
+        "description": "For law firms and teams",
+        "price": "/month",
+        "feature1": "tokens/month",
+        "feature2": "Unlimited users",
+        "feature3": "Custom API",
         "feature4": "Dedicated support",
         "cta": "Contact"
       }

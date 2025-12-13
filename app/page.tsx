@@ -83,7 +83,7 @@ export default function Home() {
             </Link>
             <Link href="/login">
               <Button size="lg" variant="outline" className="text-lg">
-                Ver Demo
+                {t.home.demo}
               </Button>
             </Link>
           </div>
@@ -119,9 +119,9 @@ export default function Home() {
           <Card>
             <CardHeader>
               <Shield className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>Generación de Apelaciones</CardTitle>
+              <CardTitle>{t.home.features.appeals.title}</CardTitle>
               <CardDescription>
-                Crea apelaciones y opiniones legales fundamentadas en la legislación vigente
+                {t.home.features.appeals.description}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -129,9 +129,9 @@ export default function Home() {
           <Card>
             <CardHeader>
               <Scale className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>Base Legal Completa</CardTitle>
+              <CardTitle>{t.home.features.complete.title}</CardTitle>
               <CardDescription>
-                Acceso a todas las leyes de Costa Rica: Civil, Penal, Tránsito, Laboral y más
+                {t.home.features.complete.description}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -139,9 +139,9 @@ export default function Home() {
           <Card>
             <CardHeader>
               <Users className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>Para Abogados y Clientes</CardTitle>
+              <CardTitle>{t.home.features.clients.title}</CardTitle>
               <CardDescription>
-                Interfaz adaptada tanto para profesionales del derecho como para clientes
+                {t.home.features.clients.description}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -149,9 +149,9 @@ export default function Home() {
           <Card>
             <CardHeader>
               <Sparkles className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>Sistema de Tokens</CardTitle>
+              <CardTitle>{t.home.features.tokens.title}</CardTitle>
               <CardDescription>
-                Planes flexibles con tokens para acceder a las funcionalidades según tus necesidades
+                {t.home.features.tokens.description}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -161,70 +161,70 @@ export default function Home() {
       {/* Pricing Section */}
       <section className="container mx-auto px-4 py-20">
         <h2 className="mb-12 text-center text-3xl font-bold text-gray-900 dark:text-white">
-          Planes y Precios
+          {t.home.pricing.title}
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle>Gratis</CardTitle>
-              <CardDescription>Para probar la plataforma</CardDescription>
+              <CardTitle>{t.home.pricing.free.title}</CardTitle>
+              <CardDescription>{t.home.pricing.free.description}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
                 <span className="text-4xl font-bold">100</span>
-                <span className="text-gray-600"> tokens/mes</span>
+                <span className="text-gray-600"> {t.home.pricing.free.tokens}</span>
               </div>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ Consultas básicas</li>
-                <li>✓ Búsqueda en leyes</li>
-                <li>✓ 5 análisis de documentos</li>
+                <li>✓ {t.home.pricing.free.feature1}</li>
+                <li>✓ {t.home.pricing.free.feature2}</li>
+                <li>✓ 5 {t.home.pricing.free.feature3}</li>
               </ul>
               <Link href="/login" className="block">
-                <Button className="mt-6 w-full" variant="outline">Comenzar</Button>
+                <Button className="mt-6 w-full" variant="outline">{t.home.pricing.free.cta}</Button>
               </Link>
             </CardContent>
           </Card>
 
           <Card className="border-blue-600 border-2">
             <CardHeader>
-              <CardTitle>Profesional</CardTitle>
-              <CardDescription>Para abogados independientes</CardDescription>
+              <CardTitle>{t.home.pricing.professional.title}</CardTitle>
+              <CardDescription>{t.home.pricing.professional.description}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
                 <span className="text-4xl font-bold">$49</span>
-                <span className="text-gray-600">/mes</span>
+                <span className="text-gray-600">{t.home.pricing.professional.price}</span>
               </div>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ 5,000 tokens/mes</li>
-                <li>✓ Análisis ilimitados</li>
-                <li>✓ Generación de documentos</li>
-                <li>✓ Soporte prioritario</li>
+                <li>✓ 5,000 {t.home.pricing.professional.feature1}</li>
+                <li>✓ {t.home.pricing.professional.feature2}</li>
+                <li>✓ {t.home.pricing.professional.feature3}</li>
+                <li>✓ {t.home.pricing.professional.feature4}</li>
               </ul>
               <Link href="/login" className="block">
-                <Button className="mt-6 w-full">Suscribirse</Button>
+                <Button className="mt-6 w-full">{t.home.pricing.professional.cta}</Button>
               </Link>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Empresa</CardTitle>
-              <CardDescription>Para bufetes y equipos</CardDescription>
+              <CardTitle>{t.home.pricing.enterprise.title}</CardTitle>
+              <CardDescription>{t.home.pricing.enterprise.description}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
                 <span className="text-4xl font-bold">$199</span>
-                <span className="text-gray-600">/mes</span>
+                <span className="text-gray-600">{t.home.pricing.enterprise.price}</span>
               </div>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ 25,000 tokens/mes</li>
-                <li>✓ Usuarios ilimitados</li>
-                <li>✓ API personalizada</li>
-                <li>✓ Soporte dedicado</li>
+                <li>✓ 25,000 {t.home.pricing.enterprise.feature1}</li>
+                <li>✓ {t.home.pricing.enterprise.feature2}</li>
+                <li>✓ {t.home.pricing.enterprise.feature3}</li>
+                <li>✓ {t.home.pricing.enterprise.feature4}</li>
               </ul>
               <Link href="/login" className="block">
-                <Button className="mt-6 w-full" variant="outline">Contactar</Button>
+                <Button className="mt-6 w-full" variant="outline">{t.home.pricing.enterprise.cta}</Button>
               </Link>
             </CardContent>
           </Card>
@@ -234,9 +234,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 py-8 text-center text-gray-600 dark:text-gray-400">
-          <p>&copy; 2024 LexAI Costa Rica. Todos los derechos reservados.</p>
+          <p>&copy; 2024 LexAI Costa Rica. {t.home.footer.rights}</p>
           <p className="mt-2 text-sm">
-            Diseñado por{' '}
+            {t.home.footer.designedBy}{' '}
             <a 
               href="https://manuportuguez.com" 
               target="_blank" 

@@ -34,6 +34,11 @@ const CODE_NAMES: Record<string, string> = {
 // Buscar artículo por número en la base de datos
 async function searchLegalArticle(codeName: string, articleNumber: string) {
   try {
+    if (!prisma) {
+      console.error('Prisma client not available')
+      return null
+    }
+    
     const codeId = CODE_MAP[codeName]
     if (!codeId) return null
     
@@ -54,6 +59,11 @@ async function searchLegalArticle(codeName: string, articleNumber: string) {
 // Buscar artículos por palabra clave
 async function searchLegalByKeyword(codeName: string, keyword: string, maxResults: number = 2) {
   try {
+    if (!prisma) {
+      console.error('Prisma client not available')
+      return []
+    }
+    
     const codeId = CODE_MAP[codeName]
     if (!codeId) return []
     

@@ -1,3 +1,17 @@
+/**
+ * DOCUMENT ANALYSIS API ROUTE
+ * 
+ * ⚠️ NO PDF PROCESSING - This route receives PLAIN TEXT only
+ * 
+ * FLOW:
+ * 1. User uploads .txt or .docx via /api/parse-document
+ * 2. parse-document extracts text and returns it
+ * 3. Frontend sends extracted TEXT (not PDF) to this route
+ * 4. This route analyzes the TEXT using OpenAI
+ * 
+ * NO PDF LIBRARIES are used here. Only text analysis.
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { openai } from '@/lib/openai'
 

@@ -1,3 +1,20 @@
+/**
+ * DOCUMENT UPLOAD COMPONENT
+ * 
+ * ⚠️ NO PDF PROCESSING - By design
+ * 
+ * SUPPORTED:
+ * - .txt files (plain text)
+ * - .docx files (Word documents)
+ * 
+ * NOT SUPPORTED:
+ * - .pdf files (to ensure fast, stable responses)
+ * 
+ * For legal code queries (Código Civil, Código de Comercio),
+ * users should use the main chat interface which has instant
+ * access to pre-processed JSON files.
+ */
+
 "use client"
 
 import { useState, useRef } from "react"
@@ -43,7 +60,7 @@ export function DocumentUpload() {
     const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext))
     
     if (!hasValidExtension) {
-      alert('Por favor sube un archivo .txt o .docx\n\nPDF próximamente disponible')
+      alert('Por favor sube un archivo .txt o .docx\n\n⚠️ PDFs no son soportados por diseño (para mantener respuestas rápidas).\n\nPara consultas legales, usa el chat principal que tiene acceso instantáneo a los códigos de Costa Rica.')
       return
     }
 
@@ -263,8 +280,8 @@ export function DocumentUpload() {
             <p className="mt-1 text-xs text-blue-600">
               💡 Prueba con ejemplo-contrato.txt
             </p>
-            <p className="mt-1 text-xs text-gray-500">
-              PDF próximamente disponible
+            <p className="mt-1 text-xs text-amber-600">
+              ⚠️ PDFs no soportados (usa chat para códigos legales)
             </p>
           </CardContent>
         </Card>

@@ -1,8 +1,24 @@
 /**
- * DOCUMENT PARSER - SIMPLIFIED
+ * DOCUMENT PARSER API ROUTE
  * 
- * PDF support removed (use pre-processed legal codes instead)
- * Only supports .txt and .docx files now
+ * ⚠️ CRITICAL ARCHITECTURE DECISION:
+ * NO PDF PROCESSING AT RUNTIME - BY DESIGN
+ * 
+ * WHY:
+ * - PDF parsing is SLOW (10-30 seconds per document)
+ * - PDF libraries (pdfjs-dist, pdf2json) are UNSTABLE in serverless
+ * - Legal codes are PRE-PROCESSED offline into JSON (see /data/processed/)
+ * - This ensures FAST (<2s), DETERMINISTIC responses
+ * 
+ * SUPPORTED FORMATS:
+ * - .txt (plain text)
+ * - .docx (Word documents via mammoth)
+ * 
+ * NOT SUPPORTED:
+ * - .pdf (users should convert to .txt or .docx, or use main chat for legal codes)
+ * 
+ * For legal code queries, users should use the main chat interface which has
+ * instant access to pre-processed Código Civil and Código de Comercio.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -29,10 +45,11 @@ export async function POST(request: NextRequest) {
 
     // Procesar según el tipo de archivo
     if (fileName.endsWith('.pdf')) {
-      // PDF support removed - use pre-processed legal codes instead
+      // ⚠️ NO PDF PROCESSING AT RUNTIME - BY DESIGN
+      // PDFs are NOT supported to ensure fast, stable responses
       return NextResponse.json(
         { 
-          error: 'Los archivos PDF ya no son soportados. Para consultas legales, usa el chat principal que tiene acceso a los códigos de Costa Rica. Para otros documentos, usa archivos .txt o .docx.' 
+          error: 'Archivos PDF no soportados. Para consultas legales, usa el chat principal (tiene acceso instantáneo a Código Civil y Código de Comercio). Para otros documentos, convierte a .txt o .docx.' 
         },
         { status: 400 }
       )

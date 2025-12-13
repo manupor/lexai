@@ -1,3 +1,20 @@
+/**
+ * DOCUMENT CHAT API ROUTE
+ * 
+ * ⚠️ NO PDF PROCESSING - This route receives PLAIN TEXT only
+ * 
+ * FLOW:
+ * 1. User uploads document via /api/parse-document (gets text)
+ * 2. Document is analyzed via /api/analyze-document
+ * 3. User asks questions about the document
+ * 4. This route answers based on the TEXT content (not PDF)
+ * 
+ * ENHANCEMENT:
+ * - Searches pre-processed legal codes (Código Civil, Código de Comercio)
+ * - Augments answers with relevant articles from JSON files
+ * - NO PDF parsing at runtime
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { openai } from '@/lib/openai'
 import { searchLegalByKeyword } from '@/lib/legal-loader'

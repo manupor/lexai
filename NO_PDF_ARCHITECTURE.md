@@ -35,16 +35,30 @@ This is a **deliberate architectural choice** for stability, performance, and de
 
 ## Our Solution: Pre-Processing
 
-### Offline PDF Extraction
+### Offline PDF Extraction Pipeline
+
+**Step 1: Extract PDFs to Text**
 ```bash
-npm run extract-pdfs
+npm run extract:pdfs
 ```
 
-This script (in `/scripts/extract-legal-pdfs.js`):
+This script (in `/scripts/extract-pdfs.ts`):
 1. Reads PDFs from `/data/pdfs/`
-2. Extracts text using `pdf-parse` (offline, one-time)
-3. Parses articles into structured JSON
-4. Saves to `/data/processed/`
+2. Extracts text using `pdftotext` (Poppler system tool)
+3. Saves raw text to `/data/text/`
+4. Fast, reliable, battle-tested
+
+**Step 2: Convert Text to JSON**
+```bash
+npm run convert:txt-to-json
+```
+
+This script (in `/scripts/convert-txt-to-json.js`):
+1. Reads text files from `/data/text/`
+2. Parses articles into structured JSON
+3. Saves to `/data/processed/`
+
+See `DATA_PIPELINE.md` for complete documentation.
 
 ### Runtime: JSON Only
 All API routes read from `/data/processed/*.json`:
@@ -97,8 +111,8 @@ These files explicitly REJECT PDFs:
 
 ### Pre-Processing (Offline Only)
 These scripts run OFFLINE, not in API routes:
-- `/scripts/extract-legal-pdfs.js` - Extracts PDFs to JSON (run once)
-- `/scripts/convert-txt-to-json.js` - Converts TXT to JSON
+- `/scripts/extract-pdfs.ts` - Extracts PDFs to text using pdftotext
+- `/scripts/convert-txt-to-json.js` - Converts text to structured JSON
 
 ### Runtime (JSON Only)
 These files read pre-processed JSON:

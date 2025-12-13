@@ -189,9 +189,21 @@ export async function getArticleRange(
  * Format article for display in chat
  */
 export function formatArticleForChat(article: LegalArticle, codeName: string): string {
-  const codeTitle = codeName === 'codigo-civil' 
-    ? 'Código Civil de Costa Rica (Ley N° 63)'
-    : 'Código de Comercio de Costa Rica (Ley N° 3284)'
+  let codeTitle: string
+  
+  switch (codeName) {
+    case 'codigo-civil':
+      codeTitle = 'Código Civil de Costa Rica (Ley N° 63)'
+      break
+    case 'codigo-comercio':
+      codeTitle = 'Código de Comercio de Costa Rica (Ley N° 3284)'
+      break
+    case 'codigo-trabajo':
+      codeTitle = 'Código de Trabajo de Costa Rica (Ley N° 2)'
+      break
+    default:
+      codeTitle = 'Código Legal de Costa Rica'
+  }
   
   return `**${codeTitle}**
 

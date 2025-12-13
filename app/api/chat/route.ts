@@ -65,6 +65,13 @@ export async function POST(request: NextRequest) {
         additionalContext += `\n\n${formatArticleForChat(comercioArticle, 'codigo-comercio')}\n`
       }
       
+      // Try Código de Trabajo
+      const trabajoArticle = await searchLegalArticle('codigo-trabajo', articleNumber)
+      if (trabajoArticle) {
+        foundRelevantLaw = true
+        additionalContext += `\n\n${formatArticleForChat(trabajoArticle, 'codigo-trabajo')}\n`
+      }
+      
       if (foundRelevantLaw) {
         additionalContext = `🎯 ARTÍCULO ENCONTRADO - CITA TEXTUALMENTE:\n${additionalContext}`
       }
@@ -92,6 +99,13 @@ export async function POST(request: NextRequest) {
         comercioResults.forEach(article => {
           foundRelevantLaw = true
           additionalContext += `\n\n${formatArticleForChat(article, 'codigo-comercio')}\n`
+        })
+        
+        // Search in Código de Trabajo
+        const trabajoResults = await searchLegalByKeyword('codigo-trabajo', keyword, 2)
+        trabajoResults.forEach(article => {
+          foundRelevantLaw = true
+          additionalContext += `\n\n${formatArticleForChat(article, 'codigo-trabajo')}\n`
         })
         
         if (foundRelevantLaw) break // Stop after first keyword with results

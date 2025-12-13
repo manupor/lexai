@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Scale, MessageSquare, FileText, Plus, Coins, LogOut, Settings, User } from "lucide-react"
+import { Scale, MessageSquare, FileText, Plus, Coins, LogOut, Settings, User, Menu, X } from "lucide-react"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [conversations, setConversations] = useState<any[]>([])
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [chatKey, setChatKey] = useState(0)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   
   // Redirigir a login si no está autenticado
   useEffect(() => {
@@ -79,28 +80,42 @@ export default function DashboardPage() {
     setChatKey(prev => prev + 1)
     // Asegurar que estamos en la pestaña de chat
     setActiveTab("chat")
+    // Cerrar sidebar en móvil
+    setSidebarOpen(false)
   }
 
   return (
     <div className="flex h-screen flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Header */}
       <header className="border-b border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60">
-        <div className="flex h-16 items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-6">
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lg:hidden"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur-sm opacity-75"></div>
-              <Scale className="relative h-8 w-8 text-white bg-gradient-to-r from-blue-600 to-indigo-600 p-1.5 rounded-lg" />
+              <Scale className="relative h-6 w-6 sm:h-8 sm:w-8 text-white bg-gradient-to-r from-blue-600 to-indigo-600 p-1 sm:p-1.5 rounded-lg" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="text-base sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hidden sm:inline">
               LexAI Costa Rica
+            </span>
+            <span className="text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent sm:hidden">
+              LexAI
             </span>
           </Link>
           
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20">
-              <Coins className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
-              <span className="font-semibold text-sm">{userTokens}</span>
-              <Badge variant="outline" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20">
+              <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 dark:text-yellow-500" />
+              <span className="font-semibold text-xs sm:text-sm">{userTokens}</span>
+              <Badge variant="outline" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 text-xs hidden sm:inline-flex">
                 {userPlan}
               </Badge>
             </div>
@@ -151,9 +166,18 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-64 border-r border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-4">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Sidebar - Hidden on mobile, overlay on tablet, fixed on desktop */}
+        <aside className={`
+          fixed lg:relative inset-y-0 left-0 z-50
+          w-64 lg:w-64
+          border-r border-slate-200/50 dark:border-slate-800/50 
+          bg-white dark:bg-slate-900 lg:bg-white/50 lg:dark:bg-slate-900/50
+          backdrop-blur-xl p-4
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          lg:block
+        `}>
           <div className="space-y-2">
             <Button
               variant="default"
@@ -171,7 +195,10 @@ export default function DashboardPage() {
                   ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/50"
                   : "hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
-              onClick={() => setActiveTab("documents")}
+              onClick={() => {
+                setActiveTab("documents")
+                setSidebarOpen(false)
+              }}
             >
               <FileText className="mr-2 h-4 w-4" />
               Documentos
@@ -197,6 +224,7 @@ export default function DashboardPage() {
                     onClick={() => {
                       setCurrentConversationId(conv.id)
                       setChatKey(prev => prev + 1)
+                      setSidebarOpen(false)
                     }}
                   >
                     <span className="truncate">{conv.title}</span>
@@ -207,8 +235,16 @@ export default function DashboardPage() {
           </div>
         </aside>
 
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Main Content */}
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden w-full">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
             <TabsContent value="chat" className="h-full m-0">
               <ChatInterface 

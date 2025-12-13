@@ -1,0 +1,93 @@
+{
+  "common": {
+    "language": "Español",
+    "switchLanguage": "English"
+  },
+  "home": {
+    "title": "Asistente Legal Inteligente para Costa Rica",
+    "subtitle": "Consulta leyes, analiza documentos y obtén respuestas precisas basadas en el sistema jurídico costarricense",
+    "cta": "Comenzar Ahora",
+    "features": {
+      "title": "Características Principales",
+      "chat": {
+        "title": "Chat Legal Inteligente",
+        "description": "Consulta sobre leyes de Costa Rica y obtén respuestas precisas con referencias a artículos específicos"
+      },
+      "analysis": {
+        "title": "Análisis de Documentos",
+        "description": "Sube contratos y documentos legales para obtener un análisis detallado y recomendaciones"
+      },
+      "search": {
+        "title": "Búsqueda en Códigos",
+        "description": "Acceso directo a Código Civil, Código de Comercio y otras leyes de Costa Rica"
+      },
+      "voice": {
+        "title": "Consultas por Voz",
+        "description": "Realiza consultas legales usando tu voz para mayor comodidad"
+      },
+      "citations": {
+        "title": "Citas Precisas",
+        "description": "Todas las respuestas incluyen referencias exactas a artículos y leyes aplicables"
+      },
+      "tokens": {
+        "title": "Sistema de Tokens",
+        "description": "Planes flexibles con tokens para acceder a las funcionalidades según tus necesidades"
+      }
+    },
+    "pricing": {
+      "title": "Planes y Precios",
+      "free": {
+        "title": "Gratis",
+        "description": "Para probar la plataforma",
+        "tokens": "tokens/mes",
+        "feature1": "Consultas básicas",
+        "feature2": "Búsqueda en leyes",
+        "feature3": "análisis de documentos",
+        "cta": "Comenzar"
+      },
+      "professional": {
+        "title": "Profesional",
+        "description": "Para abogados independientes",
+        "price": "/mes",
+        "feature1": "tokens/mes",
+        "feature2": "Análisis ilimitados",
+        "feature3": "Generación de documentos",
+        "feature4": "Soporte prioritario",
+        "cta": "Suscribirse"
+      },
+      "enterprise": {
+        "title": "Empresarial",
+        "description": "Para bufetes y empresas",
+        "price": "Personalizado",
+        "feature1": "Tokens ilimitados",
+        "feature2": "API dedicada",
+        "feature3": "Integración personalizada",
+        "feature4": "Soporte dedicado",
+        "cta": "Contactar"
+      }
+    },
+    "footer": {
+      "rights": "Todos los derechos reservados.",
+      "designedBy": "Diseñado por"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "newChat": "Nueva Consulta",
+    "recentConversations": "Conversaciones Recientes",
+    "uploadDocument": "Subir Documento",
+    "chat": {
+      "placeholder": "Escribe tu consulta legal aquí...",
+      "send": "Enviar",
+      "thinking": "Pensando...",
+      "tokensUsed": "Tokens usados"
+    }
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "signOut": "Cerrar Sesión",
+    "signInWith": "Iniciar sesión con",
+    "google": "Google",
+    "facebook": "Facebook"
+  }
+}

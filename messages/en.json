@@ -1,0 +1,93 @@
+{
+  "common": {
+    "language": "English",
+    "switchLanguage": "Español"
+  },
+  "home": {
+    "title": "Intelligent Legal Assistant for Costa Rica",
+    "subtitle": "Consult laws, analyze documents and get accurate answers based on the Costa Rican legal system",
+    "cta": "Get Started",
+    "features": {
+      "title": "Key Features",
+      "chat": {
+        "title": "Intelligent Legal Chat",
+        "description": "Ask about Costa Rican laws and get accurate answers with references to specific articles"
+      },
+      "analysis": {
+        "title": "Document Analysis",
+        "description": "Upload contracts and legal documents to get detailed analysis and recommendations"
+      },
+      "search": {
+        "title": "Code Search",
+        "description": "Direct access to Civil Code, Commercial Code and other Costa Rican laws"
+      },
+      "voice": {
+        "title": "Voice Queries",
+        "description": "Make legal queries using your voice for greater convenience"
+      },
+      "citations": {
+        "title": "Accurate Citations",
+        "description": "All answers include exact references to applicable articles and laws"
+      },
+      "tokens": {
+        "title": "Token System",
+        "description": "Flexible plans with tokens to access features according to your needs"
+      }
+    },
+    "pricing": {
+      "title": "Plans and Pricing",
+      "free": {
+        "title": "Free",
+        "description": "To try the platform",
+        "tokens": "tokens/month",
+        "feature1": "Basic queries",
+        "feature2": "Law search",
+        "feature3": "document analysis",
+        "cta": "Start"
+      },
+      "professional": {
+        "title": "Professional",
+        "description": "For independent lawyers",
+        "price": "/month",
+        "feature1": "tokens/month",
+        "feature2": "Unlimited analysis",
+        "feature3": "Document generation",
+        "feature4": "Priority support",
+        "cta": "Subscribe"
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "description": "For law firms and companies",
+        "price": "Custom",
+        "feature1": "Unlimited tokens",
+        "feature2": "Dedicated API",
+        "feature3": "Custom integration",
+        "feature4": "Dedicated support",
+        "cta": "Contact"
+      }
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "designedBy": "Designed by"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "newChat": "New Query",
+    "recentConversations": "Recent Conversations",
+    "uploadDocument": "Upload Document",
+    "chat": {
+      "placeholder": "Type your legal query here...",
+      "send": "Send",
+      "thinking": "Thinking...",
+      "tokensUsed": "Tokens used"
+    }
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signInWith": "Sign in with",
+    "google": "Google",
+    "facebook": "Facebook"
+  }
+}

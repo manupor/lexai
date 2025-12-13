@@ -1,11 +1,15 @@
 import OpenAI from 'openai'
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('OPENAI_API_KEY no está configurada')
+// Allow build to succeed without API key (will fail at runtime if actually used)
+// This is necessary for Vercel builds where env vars are injected after build
+const apiKey = process.env.OPENAI_API_KEY || 'build-time-placeholder'
+
+if (!process.env.OPENAI_API_KEY && process.env.NODE_ENV !== 'production') {
+  console.warn('⚠️  OPENAI_API_KEY not set - API calls will fail')
 }
 
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey,
 })
 
 export const LEGAL_SYSTEM_PROMPT = `Eres un ABOGADO EXPERTO especializado EXCLUSIVAMENTE en el sistema jurídico de Costa Rica. 

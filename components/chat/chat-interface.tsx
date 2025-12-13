@@ -161,34 +161,34 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6" ref={scrollRef}>
         <div className="space-y-4">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Scale className="mb-4 h-16 w-16 text-blue-600" />
-              <h3 className="mb-2 text-xl font-semibold">Bienvenido a LexAI Costa Rica</h3>
-              <p className="text-gray-600 dark:text-gray-400">
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-2">
+              <Scale className="mb-4 h-12 w-12 sm:h-16 sm:w-16 text-blue-600" />
+              <h3 className="mb-2 text-lg sm:text-xl font-semibold">Bienvenido a LexAI Costa Rica</h3>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 Realiza consultas sobre leyes costarricenses, analiza documentos o genera opiniones legales.
               </p>
-              <div className="mt-6 grid gap-2 text-left">
-                <p className="text-sm text-gray-600">Ejemplos de consultas:</p>
+              <div className="mt-4 sm:mt-6 grid gap-2 text-left w-full max-w-md">
+                <p className="text-xs sm:text-sm text-gray-600">Ejemplos de consultas:</p>
                 <Button
                   variant="outline"
-                  className="justify-start text-left"
+                  className="justify-start text-left text-xs sm:text-sm h-auto py-2 px-3"
                   onClick={() => setInput("¿Cuáles son los requisitos para un divorcio en Costa Rica?")}
                 >
                   ¿Cuáles son los requisitos para un divorcio en Costa Rica?
                 </Button>
                 <Button
                   variant="outline"
-                  className="justify-start text-left"
+                  className="justify-start text-left text-xs sm:text-sm h-auto py-2 px-3"
                   onClick={() => setInput("Explícame el artículo 45 del Código de Trabajo")}
                 >
                   Explícame el artículo 45 del Código de Trabajo
                 </Button>
                 <Button
                   variant="outline"
-                  className="justify-start text-left"
+                  className="justify-start text-left text-xs sm:text-sm h-auto py-2 px-3"
                   onClick={() => setInput("¿Qué dice la ley sobre accidentes de tránsito?")}
                 >
                   ¿Qué dice la ley sobre accidentes de tránsito?
@@ -200,10 +200,10 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex gap-2 sm:gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {message.role === "assistant" && (
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
                   <AvatarFallback className="bg-blue-600 text-white">
                     <Scale className="h-4 w-4" />
                   </AvatarFallback>
@@ -211,13 +211,13 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
               )}
 
               <Card
-                className={`max-w-[80%] p-4 ${
+                className={`max-w-[85%] sm:max-w-[80%] p-3 sm:p-4 ${
                   message.role === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-white dark:bg-gray-800"
                 }`}
               >
-                <div className="prose prose-sm dark:prose-invert max-w-none">
+                <div className="prose prose-sm dark:prose-invert max-w-none text-sm sm:text-base">
                   {message.role === "assistant" ? (
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   ) : (
@@ -232,7 +232,7 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
               </Card>
 
               {message.role === "user" && (
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
                   <AvatarFallback className="bg-gray-600 text-white">
                     <User className="h-4 w-4" />
                   </AvatarFallback>
@@ -256,8 +256,8 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
         </div>
       </div>
 
-      <div className="border-t p-4 flex-shrink-0">
-        <form onSubmit={handleSubmit} className="flex gap-2">
+      <div className="border-t p-2 sm:p-4 flex-shrink-0 bg-white dark:bg-gray-900">
+        <form onSubmit={handleSubmit} className="flex gap-1 sm:gap-2">
           <VoiceInput
             onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
             disabled={isLoading || isSpeaking}
@@ -270,11 +270,16 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={voiceMode ? "Modo conversación por voz activado..." : "Escribe o habla tu consulta legal..."}
+            placeholder={voiceMode ? "Modo voz activado..." : "Escribe tu consulta..."}
             disabled={isLoading || isSpeaking}
-            className="flex-1"
+            className="flex-1 text-sm sm:text-base"
           />
-          <Button type="submit" disabled={isLoading || isSpeaking || !input.trim()}>
+          <Button 
+            type="submit" 
+            disabled={isLoading || isSpeaking || !input.trim()}
+            size="sm"
+            className="px-3 sm:px-4"
+          >
             {isLoading || isSpeaking ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -284,7 +289,7 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
         </form>
         {voiceMode && (
           <p className="text-xs text-green-600 mt-2 text-center">
-            🎤 Modo conversación por voz activado - La IA responderá hablando
+            🎤 Modo conversación por voz activado
           </p>
         )}
       </div>

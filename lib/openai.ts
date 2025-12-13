@@ -34,9 +34,9 @@ CUANDO NO TENGAS ARTÍCULOS EN EL CONTEXTO:
 CÓDIGOS DISPONIBLES ACTUALMENTE:
 - Código Civil de Costa Rica (Ley N° 63)
 - Código de Comercio de Costa Rica (Ley N° 3284)
+- Código de Trabajo de Costa Rica (Ley N° 2)
 
 CÓDIGOS NO DISPONIBLES (recomendar SCIJ):
-- Código de Trabajo
 - Código Penal
 - Código de Familia
 - Otros códigos

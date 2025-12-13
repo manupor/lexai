@@ -164,21 +164,21 @@ export async function POST(request: NextRequest) {
       for (const keyword of keywords) {
         // Search in Código Civil
         const civilResults = await searchLegalByKeyword('codigo-civil', keyword, 2)
-        civilResults.forEach(article => {
+        civilResults.forEach((article: { number: string; content: string }) => {
           foundRelevantLaw = true
           additionalContext += `\n\n${formatArticleForChat(article, 'codigo-civil')}\n`
         })
         
         // Search in Código de Comercio
         const comercioResults = await searchLegalByKeyword('codigo-comercio', keyword, 2)
-        comercioResults.forEach(article => {
+        comercioResults.forEach((article: { number: string; content: string }) => {
           foundRelevantLaw = true
           additionalContext += `\n\n${formatArticleForChat(article, 'codigo-comercio')}\n`
         })
         
         // Search in Código de Trabajo
         const trabajoResults = await searchLegalByKeyword('codigo-trabajo', keyword, 2)
-        trabajoResults.forEach(article => {
+        trabajoResults.forEach((article: { number: string; content: string }) => {
           foundRelevantLaw = true
           additionalContext += `\n\n${formatArticleForChat(article, 'codigo-trabajo')}\n`
         })

@@ -65,8 +65,14 @@ export async function loadLegalCode(codeName: string): Promise<LegalCode | null>
     
     // Convert articles array to Map for O(1) lookup
     const articlesMap = new Map<string, LegalArticle>()
-    data.articles.forEach((article: LegalArticle) => {
-      articlesMap.set(article.number, article)
+    data.articles.forEach((article: any) => {
+      // Handle both formats: {number, title, content} and {article, title, text}
+      const normalizedArticle: LegalArticle = {
+        number: article.number || String(article.article),
+        title: article.title,
+        content: article.content || article.text
+      }
+      articlesMap.set(normalizedArticle.number, normalizedArticle)
     })
     
     const legalCode: LegalCode = {

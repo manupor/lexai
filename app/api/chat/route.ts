@@ -34,13 +34,13 @@ const CODE_NAMES: Record<string, string> = {
 // Buscar artículo por número en la base de datos
 async function searchLegalArticle(codeName: string, articleNumber: string) {
   try {
-    if (!prisma) {
-      console.error('Prisma client not available')
+    const codeId = CODE_MAP[codeName]
+    if (!codeId) {
+      console.log(`Código no encontrado: ${codeName}`)
       return null
     }
     
-    const codeId = CODE_MAP[codeName]
-    if (!codeId) return null
+    console.log(`Buscando artículo ${articleNumber} en código ${codeId}`)
     
     const article = await prisma.article.findFirst({
       where: {
@@ -48,6 +48,12 @@ async function searchLegalArticle(codeName: string, articleNumber: string) {
         number: articleNumber
       }
     })
+    
+    if (article) {
+      console.log(`✅ Artículo ${articleNumber} encontrado en ${codeName}`)
+    } else {
+      console.log(`❌ Artículo ${articleNumber} NO encontrado en ${codeName}`)
+    }
     
     return article ? { number: article.number, content: article.content } : null
   } catch (error) {
@@ -59,11 +65,6 @@ async function searchLegalArticle(codeName: string, articleNumber: string) {
 // Buscar artículos por palabra clave
 async function searchLegalByKeyword(codeName: string, keyword: string, maxResults: number = 2) {
   try {
-    if (!prisma) {
-      console.error('Prisma client not available')
-      return []
-    }
-    
     const codeId = CODE_MAP[codeName]
     if (!codeId) return []
     
@@ -74,6 +75,8 @@ async function searchLegalByKeyword(codeName: string, keyword: string, maxResult
       },
       take: maxResults
     })
+    
+    console.log(`Búsqueda keyword "${keyword}" en ${codeName}: ${articles.length} resultados`)
     
     return articles.map((a: any) => ({ number: a.number, content: a.content }))
   } catch (error) {

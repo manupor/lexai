@@ -1,43 +1,43 @@
-// Prisma Client - configured for Neon Database
-import { PrismaClient } from '@prisma/client'
-import { PrismaNeon } from '@prisma/adapter-neon'
+// Prisma Client - Lazy initialization for build-time compatibility
+import type { PrismaClient } from '@prisma/client'
 
 declare global {
-  var cachedPrisma: PrismaClient | undefined
+  var __prismaClient: PrismaClient | undefined
 }
 
-let prismaInstance: PrismaClient | undefined
+let cachedClient: PrismaClient | undefined
 
-function getPrismaClient(): PrismaClient {
-  if (prismaInstance) return prismaInstance
+function initPrisma(): PrismaClient {
+  if (cachedClient) return cachedClient
+  if (global.__prismaClient) return global.__prismaClient
 
-  // Only initialize if DATABASE_URL is available
+  // Dynamic imports to avoid build-time execution
+  const { PrismaClient } = require('@prisma/client')
+  const { PrismaNeon } = require('@prisma/adapter-neon')
+
   if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is not defined')
+    throw new Error('DATABASE_URL environment variable is not set')
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    // Production: Use Neon adapter
-    const connectionString = process.env.DATABASE_URL
-    const adapter = new PrismaNeon({ connectionString })
-    prismaInstance = new PrismaClient({ adapter })
-  } else {
-    // Development: Use standard client with caching
-    if (!global.cachedPrisma) {
-      const connectionString = process.env.DATABASE_URL
-      const adapter = new PrismaNeon({ connectionString })
-      global.cachedPrisma = new PrismaClient({ adapter })
-    }
-    prismaInstance = global.cachedPrisma
+  const adapter = new PrismaNeon({ 
+    connectionString: process.env.DATABASE_URL 
+  })
+  
+  const client = new PrismaClient({ adapter })
+
+  if (process.env.NODE_ENV !== 'production') {
+    global.__prismaClient = client
   }
 
-  return prismaInstance
+  cachedClient = client
+  return client
 }
 
-// Export a proxy that lazily initializes Prisma
+// Proxy-based lazy initialization
 export const prisma = new Proxy({} as PrismaClient, {
-  get(target, prop) {
-    const client = getPrismaClient()
-    return (client as any)[prop]
+  get(_, prop) {
+    const client = initPrisma()
+    const value = (client as any)[prop]
+    return typeof value === 'function' ? value.bind(client) : value
   }
 })

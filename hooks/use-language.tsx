@@ -1,32 +1,49 @@
 'use client'
 
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import es from '@/messages/es.json'
 import en from '@/messages/en.json'
+import { useEffect, useState } from 'react'
 
 type Locale = 'es' | 'en'
 
 interface LanguageStore {
   locale: Locale
   setLocale: (locale: Locale) => void
-  t: any
 }
 
 const messages = { es, en }
 
-export const useLanguage = create<LanguageStore>()(
+const useLanguageStore = create<LanguageStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       locale: 'es',
       setLocale: (locale: Locale) => set({ locale }),
-      get t() {
-        const locale = get().locale
-        return messages[locale]
-      }
     }),
     {
       name: 'language-storage',
+      storage: createJSONStorage(() => localStorage),
     }
   )
 )
+
+// Hook que maneja la hidratación correctamente
+export const useLanguage = () => {
+  const locale = useLanguageStore((state) => state.locale)
+  const setLocale = useLanguageStore((state) => state.setLocale)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Mientras no esté montado, usar español por defecto
+  const currentLocale = mounted ? locale : 'es'
+  
+  return {
+    locale: currentLocale,
+    setLocale,
+    t: messages[currentLocale]
+  }
+}

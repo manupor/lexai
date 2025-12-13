@@ -91,23 +91,29 @@ npm run extract:pdfs
 
 ---
 
-## Step 2: Convert Text to JSON
+## Step 2: Parse Articles to JSON
 
-### Run Conversion
+### Run Parser
 
 ```bash
-npm run convert:txt-to-json
+npm run parse:articles
 ```
 
 **What it does:**
 - Reads text files from `/data/text/`
-- Parses articles using regex patterns
+- Parses articles using deterministic regex patterns
+- **Preserves EXACT legal text** (no AI, no rewriting)
 - Creates structured JSON with:
+  - Law code identifier
   - Article number
   - Article title
-  - Article content
-  - Full text
+  - Article text (verbatim)
   - Metadata
+- Validates:
+  - Articles found (fails if zero)
+  - Article count (warns if too low)
+  - Duplicate detection
+  - Gap detection in numbering
 
 **Output:**
 ```
@@ -122,16 +128,25 @@ npm run convert:txt-to-json
 {
   "name": "Código Civil de Costa Rica",
   "law_number": "Ley N° 63",
+  "total_articles": 1048,
   "articles": [
     {
-      "number": "1",
+      "law": "codigo_civil",
+      "article": 1,
       "title": "Artículo 1",
-      "content": "La personalidad civil del hombre..."
+      "text": "La personalidad civil del hombre comienza con el nacimiento..."
     }
   ],
-  "extracted_at": "2024-01-15T10:30:00.000Z"
+  "extracted_at": "2024-01-15T10:30:00.000Z",
+  "parser_version": "2.0.0"
 }
 ```
+
+**⚠️ CRITICAL: Text Preservation**
+- Article text is EXACT verbatim from legal code
+- No AI rewriting, no paraphrasing, no inference
+- Legal interpretation depends on precise wording
+- Courts cite exact article text
 
 ---
 
@@ -161,8 +176,8 @@ export function searchArticle(number: string) {
 ## File Locations
 
 ### Scripts (OFFLINE only)
-- `/scripts/extract-pdfs.ts` - PDF to text extraction
-- `/scripts/convert-txt-to-json.js` - Text to JSON conversion
+- `/scripts/extract-pdfs.ts` - PDF to text extraction (pdftotext)
+- `/scripts/parse-articles.ts` - Text to JSON parsing (deterministic)
 
 ### Data Directories
 - `/data/pdfs/` - Source PDFs (not in git)
@@ -208,8 +223,8 @@ jobs:
       - name: Extract PDFs
         run: npm run extract:pdfs
       
-      - name: Convert to JSON
-        run: npm run convert:txt-to-json
+      - name: Parse Articles
+        run: npm run parse:articles
       
       - name: Commit changes
         run: |
@@ -282,7 +297,13 @@ Add PDF files to `/data/pdfs/` directory
 | Stage | Tool | Input | Output | Frequency |
 |-------|------|-------|--------|-----------|
 | Extract | `pdftotext` | PDFs | Text files | When codes update |
-| Convert | Node.js | Text | JSON | After extraction |
+| Parse | TypeScript | Text | JSON | After extraction |
 | Runtime | Next.js | JSON | API responses | Every request |
+
+**Key Principles:**
+- **Deterministic**: Same input = same output
+- **Verbatim**: Exact legal text preserved
+- **No AI**: Pure text parsing, no inference
+- **Validated**: Fails fast on errors
 
 **This pipeline ensures fast, stable, deterministic legal code lookups.**

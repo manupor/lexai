@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "extract:pdfs": "tsx scripts/extract-pdfs.ts",
+    "parse:articles": "tsx scripts/parse-articles.ts",
     "convert:txt-to-json": "node scripts/convert-txt-to-json.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

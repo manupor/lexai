@@ -3,13 +3,13 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaNeon } from '@prisma/adapter-neon'
 
 declare global {
-  var prisma: PrismaClient | undefined
+  var cachedPrisma: PrismaClient | undefined
 }
 
-let prisma: PrismaClient | undefined
+let prismaInstance: PrismaClient | undefined
 
 function getPrismaClient(): PrismaClient {
-  if (prisma) return prisma
+  if (prismaInstance) return prismaInstance
 
   // Only initialize if DATABASE_URL is available
   if (!process.env.DATABASE_URL) {
@@ -20,18 +20,18 @@ function getPrismaClient(): PrismaClient {
     // Production: Use Neon adapter
     const connectionString = process.env.DATABASE_URL
     const adapter = new PrismaNeon({ connectionString })
-    prisma = new PrismaClient({ adapter })
+    prismaInstance = new PrismaClient({ adapter })
   } else {
     // Development: Use standard client with caching
-    if (!global.prisma) {
+    if (!global.cachedPrisma) {
       const connectionString = process.env.DATABASE_URL
       const adapter = new PrismaNeon({ connectionString })
-      global.prisma = new PrismaClient({ adapter })
+      global.cachedPrisma = new PrismaClient({ adapter })
     }
-    prisma = global.prisma
+    prismaInstance = global.cachedPrisma
   }
 
-  return prisma
+  return prismaInstance
 }
 
 // Export a proxy that lazily initializes Prisma

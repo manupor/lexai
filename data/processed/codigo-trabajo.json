@@ -1,0 +1,63 @@
+{
+  "name": "Código de Trabajo de Costa Rica",
+  "law_number": "Ley N° 2",
+  "total_articles": 10,
+  "articles": [
+    {
+      "law": "codigo_trabajo",
+      "article": 1,
+      "title": "Artículo 1",
+      "text": "El presente Código regula los derechos y obligaciones de patronos y trabajadores con ocasión del trabajo, de acuerdo con los principios cristianos de Justicia Social."
+    },
+    {
+      "law": "codigo_trabajo",
+      "article": 2,
+      "title": "Artículo 2",
+      "text": "Patrono es toda persona física o jurídica, particular o de Derecho Público, que emplea los servicios de otra u otras, en virtud de un contrato de trabajo, expreso o implícito, verbal o escrito, individual o colectivo."
+    },
+    {
+      "law": "codigo_trabajo",
+      "article": 3,
+      "title": "Artículo 3",
+      "text": "Intermediario es toda persona que contrata los servicios de otra u otras para que ejecuten algún trabajo en beneficio de un patrono. Este quedará obligado solidariamente por la gestión de aquél para los efectos legales que se deriven del presente Código, de sus Reglamentos y de las disposiciones de previsión social. Serán considerados como patronos de quienes trabajen -y no como intermediarios- los que se encarguen, por contrato, de trabajos que ejecuten con capitales propios."
+    },
+    {
+      "law": "codigo_trabajo",
+      "article": 4,
+      "title": "Artículo 4",
+      "text": "Trabajador es toda persona física que presta a otra u otras sus servicios materiales, intelectuales o de ambos géneros en virtud de un contrato de trabajo expreso o implícito, verbal o escrito, individual o colectivo."
+    },
+    {
+      "law": "codigo_trabajo",
+      "article": 5,
+      "title": "Artículo 5",
+      "text": "Se considerarán representantes de los patronos, y en tal concepto obligarán a éstos en sus relaciones con los trabajadores: los directores, gerentes, administradores, capitanes de barco y, en general, las personas que a nombre de otro ejerzan funciones de dirección o de administración."
+    },
+    {
+      "law": "codigo_trabajo",
+      "article": 6,
+      "title": "Artículo 6",
+      "text": "En toda empresa, cualquiera que sea su naturaleza, las órdenes, instrucciones y disposiciones que se dirijan a los trabajadores de la misma, deberán darse en idioma español."
+    },
+    {
+      "law": "codigo_trabajo",
+      "article": 7,
+      "title": "Artículo 7",
+      "text": "A ningún individuo se le coartará la libertad de ejercer el comercio en las zonas de trabajo, a menos que esa libertad resulte contraria a los intereses de los mismos trabajadores o de la colectividad; ni se cobrarán por dicho ejercicio otras cuotas e impuestos que los autorizados por las leyes respectivas."
+    },
+    {
+      "law": "codigo_trabajo",
+      "article": 8,
+      "title": "Artículo 8",
+      "text": "A ningún individuo se le coartará la libertad de trabajo, ni se le podrá impedir que se dedique a la profesión, industria o comercio que le plazca, siempre que cumpla las prescripciones de las leyes y reglamentos respectivos. Solamente cuando se ataquen los derechos de terceros o se ofendan los de la sociedad, podrá impedirse el trabajo y ello mediante resolución de las autoridades competentes, dictada conforme a la ley. No se entenderá coartada la libertad de trabajo cuando se actúe en uso de las facultades que prescriban este Código, sus Reglamentos y sus leyes conexas."
+    },
+    {
+      "law": "codigo_trabajo",
+      "article": 45,
+      "title": "Artículo 45",
+      "text": "Es entendido que las restricción contempladas en los cuatro artículos anteriores no rigen para los profesionales titulados ni para aquellos técnicos cuyo trabajo requiera conocimientos muy calificados."
+    }
+  ],
+  "extracted_at": "2024-12-13T21:00:00.000Z",
+  "parser_version": "2.0.0"
+}

@@ -18,10 +18,11 @@ import { prisma } from '@/lib/prisma'
 // import { checkTokenLimit, deductTokens, getUserTokens } from '@/lib/token-manager'
 
 // Mapeo de códigos a IDs en la base de datos
+// IMPORTANTE: Estos deben coincidir EXACTAMENTE con los códigos en la tabla LegalCode
 const CODE_MAP: Record<string, string> = {
-  'codigo-civil': 'CC',
-  'codigo-comercio': 'CCOM',
-  'codigo-trabajo': 'CT'
+  'codigo-civil': 'codigo-civil',
+  'codigo-comercio': 'codigo-comercio',
+  'codigo-trabajo': 'codigo-trabajo'
 }
 
 // Mapeo de códigos a nombres completos

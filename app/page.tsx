@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Scale, FileText, MessageSquare, Shield, Sparkles, Users } from "lucide-react";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function Home() {
   const { data: session, status } = useSession()
+  const { t } = useLanguage()
   
   const getInitials = (name: string) => {
     return name
@@ -29,10 +32,11 @@ export default function Home() {
             <span className="text-2xl font-bold text-gray-900 dark:text-white">LexAI Costa Rica</span>
           </div>
           <nav className="flex items-center gap-4">
+            <LanguageToggle />
             {session ? (
               <>
                 <Link href="/dashboard">
-                  <Button variant="ghost">Ir al Dashboard</Button>
+                  <Button variant="ghost">{t.dashboard.title}</Button>
                 </Link>
                 <Link href="/dashboard">
                   <Avatar className="h-9 w-9 cursor-pointer">
@@ -46,10 +50,10 @@ export default function Home() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost">Probar Ahora</Button>
+                  <Button variant="ghost">{t.home.cta}</Button>
                 </Link>
                 <Link href="/login">
-                  <Button>Ir al Chat</Button>
+                  <Button>{t.home.cta}</Button>
                 </Link>
               </>
             )}
@@ -65,16 +69,16 @@ export default function Home() {
               <Sparkles className="h-12 w-12 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
-          <h1 className="mb-6 text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Asistente Legal Inteligente para Costa Rica
+          <h1 className="mb-6 text-5xl font-bold leading-tight text-gray-900 dark:text-white md:text-6xl">
+            {t.home.title}
           </h1>
           <p className="mb-8 text-xl text-gray-600 dark:text-gray-300">
-            Análisis legal con IA, búsqueda en todas las leyes vigentes, generación de documentos y opiniones legales fundamentadas.
+            {t.home.subtitle}
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/login">
-              <Button size="lg" className="text-lg">
-                Comenzar Gratis
+              <Button size="lg" asChild>
+                <Link href="/login">{t.home.cta}</Link>
               </Button>
             </Link>
             <Link href="/login">
@@ -89,15 +93,15 @@ export default function Home() {
       {/* Features Section */}
       <section className="container mx-auto px-4 py-20">
         <h2 className="mb-12 text-center text-3xl font-bold text-gray-900 dark:text-white">
-          Funcionalidades Principales
+          {t.home.features.title}
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
               <MessageSquare className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>Chat Legal Inteligente</CardTitle>
+              <CardTitle>{t.home.features.chat.title}</CardTitle>
               <CardDescription>
-                Consulta leyes y obtén respuestas precisas con referencias a artículos específicos
+                {t.home.features.chat.description}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -105,9 +109,9 @@ export default function Home() {
           <Card>
             <CardHeader>
               <FileText className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>Análisis de Documentos</CardTitle>
+              <CardTitle>{t.home.features.analysis.title}</CardTitle>
               <CardDescription>
-                Sube contratos, demandas o cualquier documento legal para análisis detallado
+                {t.home.features.analysis.description}
               </CardDescription>
             </CardHeader>
           </Card>

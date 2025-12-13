@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 // GET - Obtener una conversación específica con todos sus mensajes
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -28,10 +28,13 @@ export async function GET(
         { status: 404 }
       )
     }
+    
+    // Await params in Next.js 15+
+    const { id } = await params
 
     const conversation = await prisma.conversation.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: user.id
       },
       include: {
@@ -61,7 +64,7 @@ export async function GET(
 // DELETE - Eliminar una conversación
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -83,11 +86,14 @@ export async function DELETE(
         { status: 404 }
       )
     }
+    
+    // Await params in Next.js 15+
+    const { id } = await params
 
     // Verificar que la conversación pertenece al usuario
     const conversation = await prisma.conversation.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: user.id
       }
     })
@@ -101,7 +107,7 @@ export async function DELETE(
 
     // Eliminar conversación (los mensajes se eliminan en cascada)
     await prisma.conversation.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({ success: true })

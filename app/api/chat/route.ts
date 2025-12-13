@@ -11,12 +11,77 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { openai, LEGAL_SYSTEM_PROMPT } from '@/lib/openai'
-import { searchLegalArticle, searchLegalByKeyword, formatArticleForChat } from '@/lib/legal-loader'
+import { prisma } from '@/lib/prisma'
 // TODO: Uncomment when implementing token system
 // import { getServerSession } from 'next-auth'
 // import { authOptions } from '@/lib/auth'
-// import { prisma } from '@/lib/prisma'
 // import { checkTokenLimit, deductTokens, getUserTokens } from '@/lib/token-manager'
+
+// Mapeo de códigos a IDs en la base de datos
+const CODE_MAP: Record<string, string> = {
+  'codigo-civil': 'CC',
+  'codigo-comercio': 'CCOM',
+  'codigo-trabajo': 'CT'
+}
+
+// Mapeo de códigos a nombres completos
+const CODE_NAMES: Record<string, string> = {
+  'codigo-civil': 'Código Civil de Costa Rica (Ley N° 63)',
+  'codigo-comercio': 'Código de Comercio de Costa Rica (Ley N° 3284)',
+  'codigo-trabajo': 'Código de Trabajo de Costa Rica (Ley N° 2)'
+}
+
+// Buscar artículo por número en la base de datos
+async function searchLegalArticle(codeName: string, articleNumber: string) {
+  try {
+    const codeId = CODE_MAP[codeName]
+    if (!codeId) return null
+    
+    const article = await prisma.article.findFirst({
+      where: {
+        legalCode: { code: codeId },
+        number: articleNumber
+      }
+    })
+    
+    return article ? { number: article.number, content: article.content } : null
+  } catch (error) {
+    console.error(`Error buscando artículo ${articleNumber} en ${codeName}:`, error)
+    return null
+  }
+}
+
+// Buscar artículos por palabra clave
+async function searchLegalByKeyword(codeName: string, keyword: string, maxResults: number = 2) {
+  try {
+    const codeId = CODE_MAP[codeName]
+    if (!codeId) return []
+    
+    const articles = await prisma.article.findMany({
+      where: {
+        legalCode: { code: codeId },
+        content: { contains: keyword, mode: 'insensitive' }
+      },
+      take: maxResults
+    })
+    
+    return articles.map((a: any) => ({ number: a.number, content: a.content }))
+  } catch (error) {
+    console.error(`Error buscando keyword "${keyword}" en ${codeName}:`, error)
+    return []
+  }
+}
+
+// Formatear artículo para el chat
+function formatArticleForChat(article: { number: string; content: string }, codeName: string): string {
+  const codeTitle = CODE_NAMES[codeName] || 'Código Legal de Costa Rica'
+  return `**${codeTitle}**
+
+**Artículo ${article.number}:**
+> ${article.content}
+
+---`
+}
 
 export async function POST(request: NextRequest) {
   try {

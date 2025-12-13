@@ -77,7 +77,7 @@ export async function searchByKeywordInDB(
       take: maxResults
     })
 
-    return articles.map((article): LegalArticleResult => ({
+    return articles.map((article: any): LegalArticleResult => ({
       number: article.number,
       title: article.title || `Artículo ${article.number}`,
       content: article.content,

@@ -124,7 +124,8 @@ export async function POST(request: NextRequest) {
     let foundRelevantLaw = false
     
     // 1. Detect if user asks for specific article number
-    const articleMatch = message.match(/art[íi]culo\s+(\d+)/i)
+    // Match variations: artículo, articulo, articuli, art, etc.
+    const articleMatch = message.match(/art[íi]cul?[oi]?\s+(\d+)/i)
     
     if (articleMatch) {
       const articleNumber = articleMatch[1]

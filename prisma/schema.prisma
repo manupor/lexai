@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?   // Opcional para OAuth users
+  image         String?   // Foto de perfil de OAuth
+  role          UserRole  @default(CLIENT)
+  tokens        Int       @default(0)
+  subscription  Subscription?
+  conversations Conversation[]
+  documents     Document[]
+  accounts      Account[] // Para OAuth providers
+  sessions      Session[] // Para NextAuth sessions
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum UserRole {
+  CLIENT
+  LAWYER
+  ADMIN
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan      SubscriptionPlan
+  status    SubscriptionStatus
+  tokens    Int
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           MessageRole
+  content        String       @db.Text
+  tokensUsed     Int          @default(0)
+  createdAt      DateTime     @default(now())
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model Document {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  content     String       @db.Text
+  type        DocumentType
+  analysis    String?      @db.Text
+  tokensUsed  Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum DocumentType {
+  CONTRACT
+  APPEAL
+  OPINION
+  COMPLAINT
+  OTHER
+}
+
+model LegalCode {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  title       String
+  category    LegalCategory
+  content     String     @db.Text
+  articles    Article[]
+  lastUpdated DateTime
+  createdAt   DateTime   @default(now())
+}
+
+enum LegalCategory {
+  CIVIL
+  PENAL
+  TRANSITO
+  LABORAL
+  COMERCIAL
+  CONSTITUCIONAL
+  ADMINISTRATIVO
+  AMBIENTAL
+  FAMILIA
+  OTHER
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  legalCodeId String
+  legalCode   LegalCode @relation(fields: [legalCodeId], references: [id], onDelete: Cascade)
+  number      String
+  title       String?
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+}

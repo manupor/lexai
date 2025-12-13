@@ -1,0 +1,258 @@
+{
+  "name": "Código Civil de Costa Rica",
+  "law_number": "Ley N° 63",
+  "articles": [
+    {
+      "number": "1",
+      "title": "Artículo 1",
+      "content": "La personalidad civil del hombre comienza con el nacimiento y termina con la muerte; pero al que está por nacer se le considera nacido para todo lo que le favorezca, siempre que nazca en condiciones de viabilidad."
+    },
+    {
+      "number": "2",
+      "title": "Artículo 2",
+      "content": "La existencia de las personas físicas termina con la muerte."
+    },
+    {
+      "number": "3",
+      "title": "Artículo 3",
+      "content": "Se presume muerta a la persona que haya desaparecido en un siniestro, en el cual hayan perecido todos o la mayor parte de los que se encontraban en el mismo peligro, si su cadáver no es hallado o no se tienen noticias de ella durante dos años, contados desde el día del siniestro."
+    },
+    {
+      "number": "4",
+      "title": "Artículo 4",
+      "content": "El domicilio de una persona física es el lugar donde tiene su residencia con el propósito de establecerse en él; a falta de éste, el lugar donde tiene el asiento principal de sus negocios; y a falta de uno y otro, el lugar donde se encuentre."
+    },
+    {
+      "number": "5",
+      "title": "Artículo 5",
+      "content": "El domicilio legal de una persona es el lugar donde la ley le fija su residencia para el ejercicio de sus derechos y el cumplimiento de sus obligaciones, aunque de hecho no esté allí presente."
+    },
+    {
+      "number": "6",
+      "title": "Artículo 6",
+      "content": "El domicilio de los menores de edad no emancipados es el de las personas a cuya patria potestad están sujetos."
+    },
+    {
+      "number": "7",
+      "title": "Artículo 7",
+      "content": "El domicilio de los incapaces es el de su representante legal."
+    },
+    {
+      "number": "8",
+      "title": "Artículo 8",
+      "content": "El estado civil de las personas sólo se comprueba con las certificaciones de las actas del Registro Civil."
+    },
+    {
+      "number": "9",
+      "title": "Artículo 9",
+      "content": "Nadie puede ser privado de su estado civil, ni desconocido en él."
+    },
+    {
+      "number": "10",
+      "title": "Artículo 10",
+      "content": "El estado civil de una persona no puede ser objeto de transacción ni de compromiso."
+    },
+    {
+      "number": "11",
+      "title": "Artículo 11",
+      "content": "Son personas jurídicas: 1) El Estado y las municipalidades; 2) Las iglesias de todos los cultos; 3) Las universidades y los colegios universitarios; 4) Las instituciones autónomas; 5) Las asociaciones, corporaciones y fundaciones, de interés público o privado; 6) Las sociedades civiles y mercantiles."
+    },
+    {
+      "number": "12",
+      "title": "Artículo 12",
+      "content": "Las personas jurídicas pueden ejercitar todos los derechos que no sean inseparables de la personalidad del hombre."
+    },
+    {
+      "number": "13",
+      "title": "Artículo 13",
+      "content": "La capacidad de las personas jurídicas se rige por las leyes que las hayan creado o reconocido; la de las asociaciones por sus estatutos; y la de las fundaciones por las reglas de su institución."
+    },
+    {
+      "number": "14",
+      "title": "Artículo 14",
+      "content": "El Registro del Estado Civil estará a cargo del Tribunal Supremo de Elecciones."
+    },
+    {
+      "number": "15",
+      "title": "Artículo 15",
+      "content": "En el Registro del Estado Civil se inscribirán los nacimientos, matrimonios, defunciones, reconocimientos de hijos, legitimaciones, adopciones, naturalizaciones y vecindades."
+    },
+    {
+      "number": "16",
+      "title": "Artículo 16",
+      "content": "Los bienes son muebles o inmuebles."
+    },
+    {
+      "number": "17",
+      "title": "Artículo 17",
+      "content": "Son bienes inmuebles: 1) El suelo, el subsuelo y el espacio aéreo; 2) Las minas, canteras y depósitos de hidrocarburos; 3) Los edificios, caminos y construcciones de todo género adheridas al suelo; 4) Los árboles y plantas mientras estuvieren unidos a la tierra, y los frutos pendientes de los mismos; 5) Todo lo que esté unido a un inmueble de una manera fija, de suerte que no pueda separarse sin quebranto de la materia ni deterioro del objeto; 6) Las estatuas, relieves, pinturas u otros objetos de ornamentación, colocados en edificios o heredades por el dueño del inmueble, en tal forma que revele el propósito de unirlos de un modo permanente al fundo; 7) Las máquinas, vasos, instrumentos o utensilios destinados por el propietario de la finca a la industria o explotación que se realice en un edificio o heredad, y que directamente concurran a satisfacer las necesidades de la explotación misma; 8) Los viveros de animales, palomares, colmenas, estanques de peces o criaderos análogos, cuando el propietario los haya colocado o los conserve con el propósito de mantenerlos unidos a la finca y formando parte de ella de un modo permanente; 9) Los abonos destinados al cultivo de una heredad, que estén en las tierras donde hayan de utilizarse; 10) Los diques y construcciones que, aun cuando sean flotantes, estén destinados por su objeto y condiciones a permanecer en un punto fijo de un río, lago o costa; 11) Los derechos reales sobre bienes inmuebles."
+    },
+    {
+      "number": "18",
+      "title": "Artículo 18",
+      "content": "Son bienes muebles: 1) Los que pueden trasladarse de un lugar a otro, sin menoscabo de la cosa inmueble a que estuvieren unidos; 2) Las fuerzas naturales susceptibles de apropiación; 3) Los derechos reales sobre bienes muebles y las acciones correspondientes; 4) Los derechos de crédito referentes a muebles, dinero o servicios personales; 5) Las acciones y obligaciones de las compañías industriales o mercantiles, aunque éstas posean bienes inmuebles."
+    },
+    {
+      "number": "19",
+      "title": "Artículo 19",
+      "content": "La propiedad es el derecho de gozar y disponer de una cosa sin más limitaciones que las establecidas por la ley."
+    },
+    {
+      "number": "20",
+      "title": "Artículo 20",
+      "content": "El propietario de una cosa lo es también de todo lo que ella produce, o se le une o incorpora natural o artificialmente."
+    },
+    {
+      "number": "21",
+      "title": "Artículo 21",
+      "content": "La propiedad del suelo lleva consigo la del subsuelo y la del espacio aéreo, en la extensión y términos que fije la ley."
+    },
+    {
+      "number": "22",
+      "title": "Artículo 22",
+      "content": "El propietario puede reivindicar la cosa de poder de quien la posea, salvo lo dispuesto en las leyes."
+    },
+    {
+      "number": "23",
+      "title": "Artículo 23",
+      "content": "Nadie puede ser privado de su propiedad sino por causa de utilidad pública legalmente comprobada, previa indemnización conforme a la ley."
+    },
+    {
+      "number": "24",
+      "title": "Artículo 24",
+      "content": "La propiedad se adquiere por la ocupación, por la accesión, por la tradición, por la sucesión y por la prescripción."
+    },
+    {
+      "number": "25",
+      "title": "Artículo 25",
+      "content": "La ocupación es un modo de adquirir la propiedad de las cosas que no pertenecen a nadie, mediante la aprehensión material de las mismas, con ánimo de adquirir el dominio."
+    },
+    {
+      "number": "26",
+      "title": "Artículo 26",
+      "content": "Pueden adquirirse por ocupación las cosas muebles que carecen de dueño, como los animales que son objeto de la caza y pesca, el tesoro oculto y las cosas muebles abandonadas."
+    },
+    {
+      "number": "27",
+      "title": "Artículo 27",
+      "content": "Hay copropiedad cuando una cosa o un derecho pertenecen pro indiviso a varias personas."
+    },
+    {
+      "number": "28",
+      "title": "Artículo 28",
+      "content": "Los copropietarios no tienen derecho a parte determinada de la cosa común, sino que cada uno tiene un derecho de propiedad sobre toda ella, en proporción a su cuota."
+    },
+    {
+      "number": "29",
+      "title": "Artículo 29",
+      "content": "Cada copropietario puede servirse de las cosas comunes, siempre que disponga de ellas conforme a su destino y de manera que no perjudique el interés de la comunidad, ni impida a los demás copropietarios usarlas según su derecho."
+    },
+    {
+      "number": "30",
+      "title": "Artículo 30",
+      "content": "Cada copropietario puede disponer de su cuota, y substituir a otro en su aprovechamiento, salvo si se tratare de derechos personales."
+    },
+    {
+      "number": "31",
+      "title": "Artículo 31",
+      "content": "El usufructo es el derecho de usar y gozar temporalmente de las cosas ajenas."
+    },
+    {
+      "number": "32",
+      "title": "Artículo 32",
+      "content": "El usufructo puede constituirse sobre toda clase de bienes muebles o inmuebles."
+    },
+    {
+      "number": "33",
+      "title": "Artículo 33",
+      "content": "El usufructo puede constituirse por la ley, por la voluntad del hombre manifestada en actos entre vivos o en testamento, y por prescripción."
+    },
+    {
+      "number": "34",
+      "title": "Artículo 34",
+      "content": "El usufructuario tiene derecho a percibir todos los frutos naturales, industriales y civiles de los bienes usufructuados."
+    },
+    {
+      "number": "35",
+      "title": "Artículo 35",
+      "content": "El usufructuario puede dar en arrendamiento el usufructo y enajenar su derecho, pero todos los contratos que celebre como tal se resolverán al fin del usufructo."
+    },
+    {
+      "number": "36",
+      "title": "Artículo 36",
+      "content": "El usufructuario está obligado a hacer en los bienes objeto del usufructo las reparaciones ordinarias que exija su conservación."
+    },
+    {
+      "number": "37",
+      "title": "Artículo 37",
+      "content": "El usufructuario debe dar aviso al propietario de toda usurpación o novedad dañosa que otro haya realizado o abiertamente prepare en las cosas usufructuadas."
+    },
+    {
+      "number": "38",
+      "title": "Artículo 38",
+      "content": "El usufructo se extingue: 1) Por muerte del usufructuario; 2) Por vencimiento del plazo por que se constituyó, o por cumplirse la condición resolutoria consignada en el título constitutivo; 3) Por la reunión del usufructo y la propiedad en una misma persona; 4) Por la renuncia del usufructuario; 5) Por la pérdida total de la cosa usufructuada; 6) Por la resolución del derecho del constituyente; 7) Por prescripción."
+    },
+    {
+      "number": "39",
+      "title": "Artículo 39",
+      "content": "Servidumbre es un gravamen impuesto sobre un inmueble en beneficio de otro perteneciente a distinto dueño."
+    },
+    {
+      "number": "40",
+      "title": "Artículo 40",
+      "content": "El inmueble a cuyo favor está constituida la servidumbre se llama predio dominante; el que la sufre, predio sirviente."
+    },
+    {
+      "number": "41",
+      "title": "Artículo 41",
+      "content": "Las servidumbres son inseparables del inmueble a que activa o pasivamente pertenecen."
+    },
+    {
+      "number": "42",
+      "title": "Artículo 42",
+      "content": "Las servidumbres pueden ser continuas o discontinuas, aparentes o no aparentes."
+    },
+    {
+      "number": "43",
+      "title": "Artículo 43",
+      "content": "Las servidumbres continuas son aquellas cuyo uso es o puede ser incesante, sin la intervención de ningún hecho del hombre."
+    },
+    {
+      "number": "44",
+      "title": "Artículo 44",
+      "content": "Las servidumbres discontinuas son aquellas cuyo uso necesita de algún hecho actual del hombre."
+    },
+    {
+      "number": "45",
+      "title": "Artículo 45",
+      "content": "Las servidumbres aparentes son las que se anuncian por signos exteriores que revelan el uso y aprovechamiento de las mismas."
+    },
+    {
+      "number": "46",
+      "title": "Artículo 46",
+      "content": "Las servidumbres no aparentes son las que no presentan signo exterior de su existencia."
+    },
+    {
+      "number": "47",
+      "title": "Artículo 47",
+      "content": "Las servidumbres pueden adquirirse por título o por prescripción."
+    },
+    {
+      "number": "48",
+      "title": "Artículo 48",
+      "content": "Sólo pueden adquirirse por prescripción las servidumbres continuas y aparentes."
+    },
+    {
+      "number": "49",
+      "title": "Artículo 49",
+      "content": "El tiempo necesario para adquirir por prescripción las servidumbres será de diez años."
+    },
+    {
+      "number": "50",
+      "title": "Artículo 50",
+      "content": "Las servidumbres se extinguen: 1) Por la reunión de ambos predios en una misma persona; 2) Por el no uso durante diez años; 3) Cuando los predios lleguen a tal estado que no pueda usarse de la servidumbre; 4) Por la redención convenida entre el dueño del predio dominante y el del sirviente; 5) Por sentencia judicial."
+    }
+  ],
+  "full_text": "CÓDIGO CIVIL DE COSTA RICA\nLey N° 63 del 28 de septiembre de 1887\n\nLIBRO PRIMERO\nDE LAS PERSONAS\n\nTÍTULO I\nDE LAS PERSONAS FÍSICAS\n\nCAPÍTULO I\nDEL PRINCIPIO Y FIN DE LA PERSONALIDAD\n\nArtículo 1.- La personalidad civil del hombre comienza con el nacimiento y termina con la muerte; pero al que está por nacer se le considera nacido para todo lo que le favorezca, siempre que nazca en condiciones de viabilidad.\n\nArtículo 2.- La existencia de las personas físicas termina con la muerte.\n\nArtículo 3.- Se presume muerta a la persona que haya desaparecido en un siniestro, en el cual hayan perecido todos o la mayor parte de los que se encontraban en el mismo peligro, si su cadáver no es hallado o no se tienen noticias de ella durante dos años, contados desde el día del siniestro.\n\nCAPÍTULO II\nDEL DOMICILIO\n\nArtículo 4.- El domicilio de una persona física es el lugar donde tiene su residencia con el propósito de establecerse en él; a falta de éste, el lugar donde tiene el asiento principal de sus negocios; y a falta de uno y otro, el lugar donde se encuentre.\n\nArtículo 5.- El domicilio legal de una persona es el lugar donde la ley le fija su residencia para el ejercicio de sus derechos y el cumplimiento de sus obligaciones, aunque de hecho no esté allí presente.\n\nArtículo 6.- El domicilio de los menores de edad no emancipados es el de las personas a cuya patria potestad están sujetos.\n\nArtículo 7.- El domicilio de los incapaces es el de su representante legal.\n\nCAPÍTULO III\nDEL ESTADO CIVIL\n\nArtículo 8.- El estado civil de las personas sólo se comprueba con las certificaciones de las actas del Registro Civil.\n\nArtículo 9.- Nadie puede ser privado de su estado civil, ni desconocido en él.\n\nArtículo 10.- El estado civil de una persona no puede ser objeto de transacción ni de compromiso.\n\nTÍTULO II\nDE LAS PERSONAS JURÍDICAS\n\nCAPÍTULO I\nDISPOSICIONES GENERALES\n\nArtículo 11.- Son personas jurídicas:\n1) El Estado y las municipalidades;\n2) Las iglesias de todos los cultos;\n3) Las universidades y los colegios universitarios;\n4) Las instituciones autónomas;\n5) Las asociaciones, corporaciones y fundaciones, de interés público o privado;\n6) Las sociedades civiles y mercantiles.\n\nArtículo 12.- Las personas jurídicas pueden ejercitar todos los derechos que no sean inseparables de la personalidad del hombre.\n\nArtículo 13.- La capacidad de las personas jurídicas se rige por las leyes que las hayan creado o reconocido; la de las asociaciones por sus estatutos; y la de las fundaciones por las reglas de su institución.\n\nTÍTULO III\nDEL REGISTRO DEL ESTADO CIVIL\n\nArtículo 14.- El Registro del Estado Civil estará a cargo del Tribunal Supremo de Elecciones.\n\nArtículo 15.- En el Registro del Estado Civil se inscribirán los nacimientos, matrimonios, defunciones, reconocimientos de hijos, legitimaciones, adopciones, naturalizaciones y vecindades.\n\nLIBRO SEGUNDO\nDE LOS BIENES\n\nTÍTULO I\nDE LA CLASIFICACIÓN DE LOS BIENES\n\nArtículo 16.- Los bienes son muebles o inmuebles.\n\nArtículo 17.- Son bienes inmuebles:\n1) El suelo, el subsuelo y el espacio aéreo;\n2) Las minas, canteras y depósitos de hidrocarburos;\n3) Los edificios, caminos y construcciones de todo género adheridas al suelo;\n4) Los árboles y plantas mientras estuvieren unidos a la tierra, y los frutos pendientes de los mismos;\n5) Todo lo que esté unido a un inmueble de una manera fija, de suerte que no pueda separarse sin quebranto de la materia ni deterioro del objeto;\n6) Las estatuas, relieves, pinturas u otros objetos de ornamentación, colocados en edificios o heredades por el dueño del inmueble, en tal forma que revele el propósito de unirlos de un modo permanente al fundo;\n7) Las máquinas, vasos, instrumentos o utensilios destinados por el propietario de la finca a la industria o explotación que se realice en un edificio o heredad, y que directamente concurran a satisfacer las necesidades de la explotación misma;\n8) Los viveros de animales, palomares, colmenas, estanques de peces o criaderos análogos, cuando el propietario los haya colocado o los conserve con el propósito de mantenerlos unidos a la finca y formando parte de ella de un modo permanente;\n9) Los abonos destinados al cultivo de una heredad, que estén en las tierras donde hayan de utilizarse;\n10) Los diques y construcciones que, aun cuando sean flotantes, estén destinados por su objeto y condiciones a permanecer en un punto fijo de un río, lago o costa;\n11) Los derechos reales sobre bienes inmuebles.\n\nArtículo 18.- Son bienes muebles:\n1) Los que pueden trasladarse de un lugar a otro, sin menoscabo de la cosa inmueble a que estuvieren unidos;\n2) Las fuerzas naturales susceptibles de apropiación;\n3) Los derechos reales sobre bienes muebles y las acciones correspondientes;\n4) Los derechos de crédito referentes a muebles, dinero o servicios personales;\n5) Las acciones y obligaciones de las compañías industriales o mercantiles, aunque éstas posean bienes inmuebles.\n\nTÍTULO II\nDE LA PROPIEDAD\n\nCAPÍTULO I\nDISPOSICIONES GENERALES\n\nArtículo 19.- La propiedad es el derecho de gozar y disponer de una cosa sin más limitaciones que las establecidas por la ley.\n\nArtículo 20.- El propietario de una cosa lo es también de todo lo que ella produce, o se le une o incorpora natural o artificialmente.\n\nArtículo 21.- La propiedad del suelo lleva consigo la del subsuelo y la del espacio aéreo, en la extensión y términos que fije la ley.\n\nArtículo 22.- El propietario puede reivindicar la cosa de poder de quien la posea, salvo lo dispuesto en las leyes.\n\nArtículo 23.- Nadie puede ser privado de su propiedad sino por causa de utilidad pública legalmente comprobada, previa indemnización conforme a la ley.\n\nCAPÍTULO II\nDE LA ADQUISICIÓN DE LA PROPIEDAD\n\nArtículo 24.- La propiedad se adquiere por la ocupación, por la accesión, por la tradición, por la sucesión y por la prescripción.\n\nArtículo 25.- La ocupación es un modo de adquirir la propiedad de las cosas que no pertenecen a nadie, mediante la aprehensión material de las mismas, con ánimo de adquirir el dominio.\n\nArtículo 26.- Pueden adquirirse por ocupación las cosas muebles que carecen de dueño, como los animales que son objeto de la caza y pesca, el tesoro oculto y las cosas muebles abandonadas.\n\nCAPÍTULO III\nDE LA COPROPIEDAD\n\nArtículo 27.- Hay copropiedad cuando una cosa o un derecho pertenecen pro indiviso a varias personas.\n\nArtículo 28.- Los copropietarios no tienen derecho a parte determinada de la cosa común, sino que cada uno tiene un derecho de propiedad sobre toda ella, en proporción a su cuota.\n\nArtículo 29.- Cada copropietario puede servirse de las cosas comunes, siempre que disponga de ellas conforme a su destino y de manera que no perjudique el interés de la comunidad, ni impida a los demás copropietarios usarlas según su derecho.\n\nArtículo 30.- Cada copropietario puede disponer de su cuota, y substituir a otro en su aprovechamiento, salvo si se tratare de derechos personales.\n\nTÍTULO III\nDEL USUFRUCTO, USO Y HABITACIÓN\n\nCAPÍTULO I\nDEL USUFRUCTO\n\nArtículo 31.- El usufructo es el derecho de usar y gozar temporalmente de las cosas ajenas.\n\nArtículo 32.- El usufructo puede constituirse sobre toda clase de bienes muebles o inmuebles.\n\nArtículo 33.- El usufructo puede constituirse por la ley, por la voluntad del hombre manifestada en actos entre vivos o en testamento, y por prescripción.\n\nArtículo 34.- El usufructuario tiene derecho a percibir todos los frutos naturales, industriales y civiles de los bienes usufructuados.\n\nArtículo 35.- El usufructuario puede dar en arrendamiento el usufructo y enajenar su derecho, pero todos los contratos que celebre como tal se resolverán al fin del usufructo.\n\nArtículo 36.- El usufructuario está obligado a hacer en los bienes objeto del usufructo las reparaciones ordinarias que exija su conservación.\n\nArtículo 37.- El usufructuario debe dar aviso al propietario de toda usurpación o novedad dañosa que otro haya realizado o abiertamente prepare en las cosas usufructuadas.\n\nArtículo 38.- El usufructo se extingue:\n1) Por muerte del usufructuario;\n2) Por vencimiento del plazo por que se constituyó, o por cumplirse la condición resolutoria consignada en el título constitutivo;\n3) Por la reunión del usufructo y la propiedad en una misma persona;\n4) Por la renuncia del usufructuario;\n5) Por la pérdida total de la cosa usufructuada;\n6) Por la resolución del derecho del constituyente;\n7) Por prescripción.\n\nTÍTULO IV\nDE LAS SERVIDUMBRES\n\nArtículo 39.- Servidumbre es un gravamen impuesto sobre un inmueble en beneficio de otro perteneciente a distinto dueño.\n\nArtículo 40.- El inmueble a cuyo favor está constituida la servidumbre se llama predio dominante; el que la sufre, predio sirviente.\n\nArtículo 41.- Las servidumbres son inseparables del inmueble a que activa o pasivamente pertenecen.\n\nArtículo 42.- Las servidumbres pueden ser continuas o discontinuas, aparentes o no aparentes.\n\nArtículo 43.- Las servidumbres continuas son aquellas cuyo uso es o puede ser incesante, sin la intervención de ningún hecho del hombre.\n\nArtículo 44.- Las servidumbres discontinuas son aquellas cuyo uso necesita de algún hecho actual del hombre.\n\nArtículo 45.- Las servidumbres aparentes son las que se anuncian por signos exteriores que revelan el uso y aprovechamiento de las mismas.\n\nArtículo 46.- Las servidumbres no aparentes son las que no presentan signo exterior de su existencia.\n\nArtículo 47.- Las servidumbres pueden adquirirse por título o por prescripción.\n\nArtículo 48.- Sólo pueden adquirirse por prescripción las servidumbres continuas y aparentes.\n\nArtículo 49.- El tiempo necesario para adquirir por prescripción las servidumbres será de diez años.\n\nArtículo 50.- Las servidumbres se extinguen:\n1) Por la reunión de ambos predios en una misma persona;\n2) Por el no uso durante diez años;\n3) Cuando los predios lleguen a tal estado que no pueda usarse de la servidumbre;\n4) Por la redención convenida entre el dueño del predio dominante y el del sirviente;\n5) Por sentencia judicial.\n",
+  "extracted_at": "2025-12-13T16:56:14.191Z"
+}

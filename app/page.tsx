@@ -69,10 +69,14 @@ export default function Home() {
         transition={{ duration: 0.5 }}
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Scale className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">LexAI Costa Rica</span>
-          </div>
+          <motion.div 
+            className="flex items-center gap-2"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400 }}
+          >
+            <Scale className="h-8 w-8 text-cyan-400" />
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">LexAI Costa Rica</span>
+          </motion.div>
           <nav className="flex items-center gap-4">
             <LanguageToggle />
             {session ? (
@@ -112,39 +116,88 @@ export default function Home() {
         style={{ transform: `translateY(${scrollY * 0.5}px)` }}
       >
         <div className="mx-auto max-w-3xl">
-          <div className="mb-6 flex justify-center">
-            <div className="rounded-full bg-blue-100 p-4 dark:bg-blue-900">
-              <Sparkles className="h-12 w-12 text-blue-600 dark:text-blue-400" />
+          <motion.div 
+            className="mb-6 flex justify-center"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", duration: 1, delay: 0.3 }}
+          >
+            <div className="rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-4 backdrop-blur-sm border border-blue-400/30 shadow-lg shadow-blue-500/50">
+              <Sparkles className="h-12 w-12 text-cyan-400" />
             </div>
-          </div>
-          <h1 className="mb-6 text-5xl font-bold leading-tight text-gray-900 dark:text-white md:text-6xl">
+          </motion.div>
+          <motion.h1 
+            className="mb-6 text-5xl font-bold leading-tight text-white md:text-6xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
             {t.home.title}
-          </h1>
-          <p className="mb-8 text-xl text-gray-600 dark:text-gray-300">
+          </motion.h1>
+          <motion.p 
+            className="mb-8 text-xl text-gray-300"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
             {t.home.subtitle}
-          </p>
-          <div className="flex justify-center gap-4">
+          </motion.p>
+          <motion.div 
+            className="flex justify-center gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+          >
             <Link href="/login">
-              <Button size="lg" asChild>
-                <Link href="/login">{t.home.cta}</Link>
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/50">
+                  {t.home.cta}
+                </Button>
+              </motion.div>
             </Link>
             <Link href="/login">
-              <Button size="lg" variant="outline" className="text-lg">
-                {t.home.demo}
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button size="lg" variant="outline" className="border-blue-400/50 text-white hover:bg-blue-500/10">
+                  {t.home.demo}
+                </Button>
+              </motion.div>
             </Link>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-20">
-        <h2 className="mb-12 text-center text-3xl font-bold text-gray-900 dark:text-white">
+      <motion.section 
+        className="container mx-auto px-4 py-20 relative z-10"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+      >
+        <motion.h2 
+          className="mb-12 text-center text-3xl font-bold text-white"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           {t.home.features.title}
-        </h2>
+        </motion.h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            whileHover={{ y: -10, scale: 1.02 }}
+          >
+            <Card className="bg-slate-900/50 backdrop-blur-md border-white/10 hover:border-blue-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20">
             <CardHeader>
               <MessageSquare className="mb-2 h-10 w-10 text-blue-600" />
               <CardTitle>{t.home.features.chat.title}</CardTitle>
@@ -204,13 +257,25 @@ export default function Home() {
             </CardHeader>
           </Card>
         </div>
-      </section>
+      </motion.section>
 
       {/* Pricing Section */}
-      <section className="container mx-auto px-4 py-20">
-        <h2 className="mb-12 text-center text-3xl font-bold text-gray-900 dark:text-white">
+      <motion.section 
+        className="container mx-auto px-4 py-20 relative z-10"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+      >
+        <motion.h2 
+          className="mb-12 text-center text-3xl font-bold text-white"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           {t.home.pricing.title}
-        </h2>
+        </motion.h2>
         <div className="grid gap-6 md:grid-cols-3">
           <Card>
             <CardHeader>
@@ -277,11 +342,11 @@ export default function Home() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </motion.section>
 
       {/* Footer */}
-      <footer className="border-t bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-8 text-center text-gray-600 dark:text-gray-400">
+      <footer className="border-t border-white/10 bg-slate-950/80 backdrop-blur-md relative z-10">
+        <div className="container mx-auto px-4 py-8 text-center text-gray-400">
           <p>&copy; 2024 LexAI Costa Rica. {t.home.footer.rights}</p>
           <p className="mt-2 text-sm">
             {t.home.footer.designedBy}{' '}
@@ -289,7 +354,7 @@ export default function Home() {
               href="https://manuportuguez.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              className="text-blue-400 hover:text-blue-300 transition-colors"
             >
               Manu Portuguez
             </a>

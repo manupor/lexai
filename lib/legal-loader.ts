@@ -1,6 +1,17 @@
 /**
  * LEGAL CODE LOADER - PRODUCTION ARCHITECTURE
  * 
+ * ⚠️ NOTE: This is the LEGACY loader. For new code, use:
+ *   import { findLegalArticle } from '@/lib/legal-search'
+ * 
+ * The new legal-search.ts provides:
+ * - Strict search precedence (exact > semantic > not found)
+ * - Better type safety
+ * - Explicit NOT FOUND handling
+ * - Future semantic search support
+ * 
+ * This file is kept for backward compatibility with existing API routes.
+ * 
  * WHY THIS DESIGN:
  * - NO runtime PDF parsing (eliminates 10-30s latency)
  * - NO pdfjs-dist or pdf-parse in API routes (eliminates worker errors)

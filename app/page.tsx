@@ -231,6 +231,17 @@ export default function Home() {
       <footer className="border-t bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 py-8 text-center text-gray-600 dark:text-gray-400">
           <p>&copy; 2024 LexAI Costa Rica. Todos los derechos reservados.</p>
+          <p className="mt-2 text-sm">
+            Diseñado por{' '}
+            <a 
+              href="https://manuportuguez.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+            >
+              Manu Portuguez
+            </a>
+          </p>
         </div>
       </footer>
     </div>

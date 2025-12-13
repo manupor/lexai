@@ -1,5 +1,11 @@
+/**
+ * DOCUMENT PARSER - SIMPLIFIED
+ * 
+ * PDF support removed (use pre-processed legal codes instead)
+ * Only supports .txt and .docx files now
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 import mammoth from 'mammoth'
 
 export async function POST(request: NextRequest) {
@@ -23,25 +29,13 @@ export async function POST(request: NextRequest) {
 
     // Procesar según el tipo de archivo
     if (fileName.endsWith('.pdf')) {
-      // Procesar PDF con pdfjs
-      try {
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
-        const pdfDocument = await loadingTask.promise
-        
-        const textParts = []
-        for (let i = 1; i <= pdfDocument.numPages; i++) {
-          const page = await pdfDocument.getPage(i)
-          const content = await page.getTextContent()
-          const pageText = content.items.map((item: any) => item.str).join(' ')
-          textParts.push(pageText)
-        }
-        text = textParts.join('\n\n')
-      } catch (error) {
-        return NextResponse.json(
-          { error: 'Error al procesar el PDF. Intenta con un archivo TXT o DOCX.' },
-          { status: 400 }
-        )
-      }
+      // PDF support removed - use pre-processed legal codes instead
+      return NextResponse.json(
+        { 
+          error: 'Los archivos PDF ya no son soportados. Para consultas legales, usa el chat principal que tiene acceso a los códigos de Costa Rica. Para otros documentos, usa archivos .txt o .docx.' 
+        },
+        { status: 400 }
+      )
     } else if (fileName.endsWith('.docx')) {
       // Procesar DOCX
       const result = await mammoth.extractRawText({ buffer })

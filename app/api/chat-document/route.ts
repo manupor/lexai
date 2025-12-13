@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { openai } from '@/lib/openai'
-import { searchCodigoComercio } from '@/lib/codigo-comercio'
-import { searchCodigoCivil } from '@/lib/codigo-civil'
+import { searchLegalByKeyword } from '@/lib/legal-loader'
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,9 +33,10 @@ export async function POST(request: NextRequest) {
     // Buscar en Código de Comercio si es relevante
     if (mentionsCodigoComercio) {
       try {
-        const relevantChunks = await searchCodigoComercio(question, 3)
-        if (relevantChunks.length > 0) {
-          additionalContext += `\n\n**TEXTO LITERAL DEL CÓDIGO DE COMERCIO DE COSTA RICA (Ley N° 3284):**\n\nDEBES citar estos artículos TEXTUALMENTE en tu respuesta. NO parafrasees.\n\n${relevantChunks.join('\n\n---\n\n')}`
+        const relevantArticles = await searchLegalByKeyword('codigo-comercio', question, 3)
+        if (relevantArticles.length > 0) {
+          const articlesText = relevantArticles.map(a => `Artículo ${a.number}: ${a.content}`).join('\n\n---\n\n')
+          additionalContext += `\n\n**TEXTO LITERAL DEL CÓDIGO DE COMERCIO DE COSTA RICA (Ley N° 3284):**\n\nDEBES citar estos artículos TEXTUALMENTE en tu respuesta. NO parafrasees.\n\n${articlesText}`
         }
       } catch (error) {
         console.error('Error al buscar en Código de Comercio:', error)
@@ -46,9 +46,10 @@ export async function POST(request: NextRequest) {
     // Buscar en Código Civil si es relevante
     if (mentionsCodigoCivil) {
       try {
-        const relevantChunks = await searchCodigoCivil(question, 3)
-        if (relevantChunks.length > 0) {
-          additionalContext += `\n\n**TEXTO LITERAL DEL CÓDIGO CIVIL DE COSTA RICA (Ley N° 63):**\n\nDEBES citar estos artículos TEXTUALMENTE en tu respuesta. NO parafrasees.\n\n${relevantChunks.join('\n\n---\n\n')}`
+        const relevantArticles = await searchLegalByKeyword('codigo-civil', question, 3)
+        if (relevantArticles.length > 0) {
+          const articlesText = relevantArticles.map(a => `Artículo ${a.number}: ${a.content}`).join('\n\n---\n\n')
+          additionalContext += `\n\n**TEXTO LITERAL DEL CÓDIGO CIVIL DE COSTA RICA (Ley N° 63):**\n\nDEBES citar estos artículos TEXTUALMENTE en tu respuesta. NO parafrasees.\n\n${articlesText}`
         }
       } catch (error) {
         console.error('Error al buscar en Código Civil:', error)

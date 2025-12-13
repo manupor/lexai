@@ -147,8 +147,14 @@ ${additionalContext}
       presence_penalty: 0.1, // Menos diversidad, más precisión
     })
 
-    const responseMessage = completion.choices[0].message.content
+    let responseMessage = completion.choices[0].message.content || ''
     const tokensUsed = completion.usage?.total_tokens || 0
+
+    // Agregar nota de verificación al final si no está ya incluida
+    const verificationNote = '\n\n---\n⚠️ **Nota:** Verifica esta información en http://www.pgrweb.go.cr/scij/ o consulta con un abogado colegiado.'
+    if (!responseMessage.includes('⚠️')) {
+      responseMessage += verificationNote
+    }
 
     // TODO: Guardar en base de datos cuando esté configurado
     // Por ahora solo retornamos la respuesta

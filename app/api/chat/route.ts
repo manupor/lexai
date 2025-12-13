@@ -12,10 +12,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { openai, LEGAL_SYSTEM_PROMPT } from '@/lib/openai'
 import { searchLegalArticle, searchLegalByKeyword, formatArticleForChat } from '@/lib/legal-loader'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { checkTokenLimit, deductTokens, getUserTokens } from '@/lib/token-manager'
+// TODO: Uncomment when implementing token system
+// import { getServerSession } from 'next-auth'
+// import { authOptions } from '@/lib/auth'
+// import { prisma } from '@/lib/prisma'
+// import { checkTokenLimit, deductTokens, getUserTokens } from '@/lib/token-manager'
 
 export async function POST(request: NextRequest) {
   try {

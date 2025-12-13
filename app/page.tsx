@@ -10,6 +10,8 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/hooks/use-language";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { AnimatedFeatureCard } from "@/components/animated-feature-card";
+import { AnimatedPricingCard } from "@/components/animated-pricing-card";
 
 export default function Home() {
   const { data: session, status } = useSession()
@@ -190,72 +192,42 @@ export default function Home() {
           {t.home.features.title}
         </motion.h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            whileHover={{ y: -10, scale: 1.02 }}
-          >
-            <Card className="bg-slate-900/50 backdrop-blur-md border-white/10 hover:border-blue-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20">
-            <CardHeader>
-              <MessageSquare className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>{t.home.features.chat.title}</CardTitle>
-              <CardDescription>
-                {t.home.features.chat.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <FileText className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>{t.home.features.analysis.title}</CardTitle>
-              <CardDescription>
-                {t.home.features.analysis.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Shield className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>{t.home.features.appeals.title}</CardTitle>
-              <CardDescription>
-                {t.home.features.appeals.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Scale className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>{t.home.features.complete.title}</CardTitle>
-              <CardDescription>
-                {t.home.features.complete.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Users className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>{t.home.features.clients.title}</CardTitle>
-              <CardDescription>
-                {t.home.features.clients.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Sparkles className="mb-2 h-10 w-10 text-blue-600" />
-              <CardTitle>{t.home.features.tokens.title}</CardTitle>
-              <CardDescription>
-                {t.home.features.tokens.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <AnimatedFeatureCard
+            icon={MessageSquare}
+            title={t.home.features.chat.title}
+            description={t.home.features.chat.description}
+            delay={0}
+          />
+          <AnimatedFeatureCard
+            icon={FileText}
+            title={t.home.features.analysis.title}
+            description={t.home.features.analysis.description}
+            delay={0.1}
+          />
+          <AnimatedFeatureCard
+            icon={Shield}
+            title={t.home.features.appeals.title}
+            description={t.home.features.appeals.description}
+            delay={0.2}
+          />
+          <AnimatedFeatureCard
+            icon={Scale}
+            title={t.home.features.complete.title}
+            description={t.home.features.complete.description}
+            delay={0.3}
+          />
+          <AnimatedFeatureCard
+            icon={Users}
+            title={t.home.features.clients.title}
+            description={t.home.features.clients.description}
+            delay={0.4}
+          />
+          <AnimatedFeatureCard
+            icon={Sparkles}
+            title={t.home.features.tokens.title}
+            description={t.home.features.tokens.description}
+            delay={0.5}
+          />
         </div>
       </motion.section>
 
@@ -277,70 +249,48 @@ export default function Home() {
           {t.home.pricing.title}
         </motion.h2>
         <div className="grid gap-6 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t.home.pricing.free.title}</CardTitle>
-              <CardDescription>{t.home.pricing.free.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <span className="text-4xl font-bold">100</span>
-                <span className="text-gray-600"> {t.home.pricing.free.tokens}</span>
-              </div>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ {t.home.pricing.free.feature1}</li>
-                <li>✓ {t.home.pricing.free.feature2}</li>
-                <li>✓ 5 {t.home.pricing.free.feature3}</li>
-              </ul>
-              <Link href="/login" className="block">
-                <Button className="mt-6 w-full" variant="outline">{t.home.pricing.free.cta}</Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card className="border-blue-600 border-2">
-            <CardHeader>
-              <CardTitle>{t.home.pricing.professional.title}</CardTitle>
-              <CardDescription>{t.home.pricing.professional.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <span className="text-4xl font-bold">$49</span>
-                <span className="text-gray-600">{t.home.pricing.professional.price}</span>
-              </div>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ 5,000 {t.home.pricing.professional.feature1}</li>
-                <li>✓ {t.home.pricing.professional.feature2}</li>
-                <li>✓ {t.home.pricing.professional.feature3}</li>
-                <li>✓ {t.home.pricing.professional.feature4}</li>
-              </ul>
-              <Link href="/login" className="block">
-                <Button className="mt-6 w-full">{t.home.pricing.professional.cta}</Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t.home.pricing.enterprise.title}</CardTitle>
-              <CardDescription>{t.home.pricing.enterprise.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <span className="text-4xl font-bold">$199</span>
-                <span className="text-gray-600">{t.home.pricing.enterprise.price}</span>
-              </div>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ 25,000 {t.home.pricing.enterprise.feature1}</li>
-                <li>✓ {t.home.pricing.enterprise.feature2}</li>
-                <li>✓ {t.home.pricing.enterprise.feature3}</li>
-                <li>✓ {t.home.pricing.enterprise.feature4}</li>
-              </ul>
-              <Link href="/login" className="block">
-                <Button className="mt-6 w-full" variant="outline">{t.home.pricing.enterprise.cta}</Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <AnimatedPricingCard
+            title={t.home.pricing.free.title}
+            description={t.home.pricing.free.description}
+            price="100"
+            priceLabel={` ${t.home.pricing.free.tokens}`}
+            features={[
+              t.home.pricing.free.feature1,
+              t.home.pricing.free.feature2,
+              `5 ${t.home.pricing.free.feature3}`
+            ]}
+            ctaText={t.home.pricing.free.cta}
+            delay={0}
+          />
+          <AnimatedPricingCard
+            title={t.home.pricing.professional.title}
+            description={t.home.pricing.professional.description}
+            price="$49"
+            priceLabel={t.home.pricing.professional.price}
+            features={[
+              `5,000 ${t.home.pricing.professional.feature1}`,
+              t.home.pricing.professional.feature2,
+              t.home.pricing.professional.feature3,
+              t.home.pricing.professional.feature4
+            ]}
+            ctaText={t.home.pricing.professional.cta}
+            featured={true}
+            delay={0.1}
+          />
+          <AnimatedPricingCard
+            title={t.home.pricing.enterprise.title}
+            description={t.home.pricing.enterprise.description}
+            price="$199"
+            priceLabel={t.home.pricing.enterprise.price}
+            features={[
+              `25,000 ${t.home.pricing.enterprise.feature1}`,
+              t.home.pricing.enterprise.feature2,
+              t.home.pricing.enterprise.feature3,
+              t.home.pricing.enterprise.feature4
+            ]}
+            ctaText={t.home.pricing.enterprise.cta}
+            delay={0.2}
+          />
         </div>
       </motion.section>
 

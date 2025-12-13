@@ -116,7 +116,48 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
   body {
     @apply bg-background text-foreground;
+    /* Mejoras para móvil */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Optimizaciones para touch en móvil */
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Mejorar scroll en iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevenir zoom en inputs en iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Smooth scroll */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  
+  /* Mejorar rendimiento de animaciones */
+  @media (prefers-reduced-motion: no-preference) {
+    .animate-in,
+    .animate-out {
+      animation-duration: 300ms;
+      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
   }
 }

@@ -160,38 +160,41 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6" ref={scrollRef}>
+    <div className="flex h-full flex-col bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 overscroll-contain" ref={scrollRef}>
         <div className="space-y-4">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-2">
-              <Scale className="mb-4 h-12 w-12 sm:h-16 sm:w-16 text-blue-600" />
-              <h3 className="mb-2 text-lg sm:text-xl font-semibold">Bienvenido a LexAI Costa Rica</h3>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+            <div className="flex flex-col items-center justify-center py-6 sm:py-12 text-center px-3 sm:px-4">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-xl opacity-30 animate-pulse"></div>
+                <Scale className="relative h-14 w-14 sm:h-16 sm:w-16 text-blue-600 dark:text-blue-500" />
+              </div>
+              <h3 className="mb-3 text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Bienvenido a LexAI Costa Rica</h3>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-md">
                 Realiza consultas sobre leyes costarricenses, analiza documentos o genera opiniones legales.
               </p>
-              <div className="mt-4 sm:mt-6 grid gap-2 text-left w-full max-w-md">
-                <p className="text-xs sm:text-sm text-gray-600">Ejemplos de consultas:</p>
+              <div className="mt-6 sm:mt-8 grid gap-3 text-left w-full max-w-md px-2">
+                <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Ejemplos de consultas:</p>
                 <Button
                   variant="outline"
-                  className="justify-start text-left text-xs sm:text-sm h-auto py-2 px-3"
+                  className="justify-start text-left text-xs sm:text-sm h-auto py-3 sm:py-2.5 px-4 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-400 transition-all active:scale-[0.98]"
                   onClick={() => setInput("¿Cuáles son los requisitos para un divorcio en Costa Rica?")}
                 >
-                  ¿Cuáles son los requisitos para un divorcio en Costa Rica?
+                  <span className="line-clamp-2">¿Cuáles son los requisitos para un divorcio en Costa Rica?</span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="justify-start text-left text-xs sm:text-sm h-auto py-2 px-3"
+                  className="justify-start text-left text-xs sm:text-sm h-auto py-3 sm:py-2.5 px-4 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-400 transition-all active:scale-[0.98]"
                   onClick={() => setInput("Explícame el artículo 45 del Código de Trabajo")}
                 >
-                  Explícame el artículo 45 del Código de Trabajo
+                  <span className="line-clamp-2">Explícame el artículo 45 del Código de Trabajo</span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="justify-start text-left text-xs sm:text-sm h-auto py-2 px-3"
+                  className="justify-start text-left text-xs sm:text-sm h-auto py-3 sm:py-2.5 px-4 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-400 transition-all active:scale-[0.98]"
                   onClick={() => setInput("¿Qué dice la ley sobre accidentes de tránsito?")}
                 >
-                  ¿Qué dice la ley sobre accidentes de tránsito?
+                  <span className="line-clamp-2">¿Qué dice la ley sobre accidentes de tránsito?</span>
                 </Button>
               </div>
             </div>
@@ -200,24 +203,24 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-2 sm:gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex gap-2.5 sm:gap-3 ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
             >
               {message.role === "assistant" && (
-                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                  <AvatarFallback className="bg-blue-600 text-white">
-                    <Scale className="h-4 w-4" />
+                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 ring-2 ring-blue-100 dark:ring-blue-900">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-600 text-white">
+                    <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
                   </AvatarFallback>
                 </Avatar>
               )}
 
               <Card
-                className={`max-w-[85%] sm:max-w-[80%] p-3 sm:p-4 ${
+                className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] p-3.5 sm:p-4 shadow-sm ${
                   message.role === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white dark:bg-gray-800"
+                    ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white border-0"
+                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                 }`}
               >
-                <div className="prose prose-sm dark:prose-invert max-w-none text-sm sm:text-base">
+                <div className="prose prose-sm dark:prose-invert max-w-none text-[13px] sm:text-sm leading-relaxed">
                   {message.role === "assistant" ? (
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   ) : (
@@ -232,9 +235,9 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
               </Card>
 
               {message.role === "user" && (
-                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                  <AvatarFallback className="bg-gray-600 text-white">
-                    <User className="h-4 w-4" />
+                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 ring-2 ring-blue-100 dark:ring-blue-900">
+                  <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5" />
                   </AvatarFallback>
                 </Avatar>
               )}
@@ -242,48 +245,53 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
           ))}
 
           {isLoading && (
-            <div className="flex gap-3">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-blue-600 text-white">
-                  <Scale className="h-4 w-4" />
+            <div className="flex gap-2.5 sm:gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <Avatar className="h-8 w-8 sm:h-9 sm:w-9 ring-2 ring-blue-100 dark:ring-blue-900">
+                <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-600 text-white">
+                  <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
                 </AvatarFallback>
               </Avatar>
-              <Card className="p-4">
-                <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+              <Card className="p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-blue-600" />
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Pensando...</span>
+                </div>
               </Card>
             </div>
           )}
         </div>
       </div>
 
-      <div className="border-t p-2 sm:p-4 flex-shrink-0 bg-white dark:bg-gray-900">
-        <form onSubmit={handleSubmit} className="flex gap-1 sm:gap-2">
-          <VoiceInput
-            onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
-            disabled={isLoading || isSpeaking}
-          />
-          <VoiceModeToggle
-            enabled={voiceMode}
-            onToggle={setVoiceMode}
-            disabled={isLoading || isSpeaking}
-          />
+      <div className="border-t border-slate-200 dark:border-slate-800 p-3 sm:p-4 flex-shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-lg">
+        <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+          <div className="flex gap-2">
+            <VoiceInput
+              onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
+              disabled={isLoading || isSpeaking}
+            />
+            <VoiceModeToggle
+              enabled={voiceMode}
+              onToggle={setVoiceMode}
+              disabled={isLoading || isSpeaking}
+            />
+          </div>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={voiceMode ? "Modo voz activado..." : "Escribe tu consulta..."}
             disabled={isLoading || isSpeaking}
-            className="flex-1 text-sm sm:text-base"
+            className="flex-1 text-sm sm:text-base h-10 sm:h-11 rounded-xl border-slate-300 dark:border-slate-700 focus-visible:ring-blue-500"
           />
           <Button 
             type="submit" 
             disabled={isLoading || isSpeaking || !input.trim()}
-            size="sm"
-            className="px-3 sm:px-4"
+            size="default"
+            className="h-10 w-10 sm:h-11 sm:w-11 p-0 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
           >
             {isLoading || isSpeaking ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             )}
           </Button>
         </form>

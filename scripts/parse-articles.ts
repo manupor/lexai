@@ -64,7 +64,7 @@ const LEGAL_CODES: LegalCode[] = [
     expectedMinArticles: 1000, // Civil code has ~1000+ articles
   },
   {
-    textFile: 'codigo-comercio.txt',
+    textFile: 'codigo-comercio-completo.txt',
     outputFile: 'codigo-comercio.json',
     lawName: 'Código de Comercio de Costa Rica',
     lawNumber: 'Ley N° 3284',

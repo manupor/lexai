@@ -108,29 +108,27 @@ async function loadAllCodes() {
       console.log(`   📝 Cargando ${data.articles.length} artículos...`)
       let loaded = 0
 
-      for (const article of data.articles) {
-        const articleNumber = String(article.article || article.number || 0)
-        const articleContent = article.text || article.content || ''
-
-        if (!articleContent) {
-          console.log(`   ⚠️  Artículo ${articleNumber} sin contenido, omitiendo...`)
-          continue
-        }
-
-        await prisma.article.create({
-          data: {
+      const articlesToCreate = data.articles
+        .map((article) => {
+          const articleNumber = String(article.article || article.number || 0)
+          const articleContent = article.text || article.content || ''
+          
+          if (!articleContent) return null
+          
+          return {
             legalCodeId: legalCode.id,
             number: articleNumber,
             title: article.title || `Artículo ${articleNumber}`,
             content: articleContent,
-          },
+          }
         })
+        .filter((a): a is NonNullable<typeof a> => a !== null)
 
-        loaded++
-
-        if (loaded % 100 === 0) {
-          console.log(`   ... ${loaded} artículos cargados`)
-        }
+      if (articlesToCreate.length > 0) {
+        await prisma.article.createMany({
+          data: articlesToCreate,
+        })
+        loaded = articlesToCreate.length
       }
 
       console.log(`   ✅ ${loaded} artículos cargados exitosamente\n`)

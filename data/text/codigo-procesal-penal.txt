@@ -8507,7 +8507,17 @@ Ficha articulo
 
 
 
+La Ley 4573 es el
+Código Penal de Costa Rica, promulgado en 1970, que establece las normas generales y tipifica los delitos y sus penas, incluyendo disposiciones sobre temas como la explotación sexual infantil, delitos contra el honor (injurias y calumnias) y medio ambiente, aunque ha sido reformado en diversas ocasiones para adaptarse a nuevos contextos, como se observa en sus múltiples modificaciones a lo largo del tiempo. 
+Aspectos Clave de la Ley 4573:
 
+    Contenido General: Define los principios básicos del derecho penal y las infracciones.
+    Delitos Específicos:
+        Explotación Sexual: Tipifica actos sexuales remunerados con menores, corrupción, proxenetismo y trata infantil.
+        Delitos contra el Honor: Sanciona las injurias y calumnias, aunque ha habido propuestas para reformar las penas de prensa.
+        Delitos Ambientales: Incluye infracciones a reglamentos sobre bosques, agua (acequias, cañerías) y caza/pesca.
+        Otras Infracciones: Contravenciones a reglamentos específicos y delitos contra la propiedad o intimidad.
+    Reformas y Actualizaciones: La ley ha sido modificada frecuentemente (por ejemplo, Ley N° 8250) para actualizarse, como en aspectos de libertad condicional e inhabilitaciones.
+    Estructura: Se divide en libros y secciones (Disposiciones Generales, Título I, etc.) para organizar las normas penales. 
 
-Fecha de generación: 17/1/2026 23:16:16
-Ir al principio del documento 
+En resumen, la Ley 4573 es el cuerpo legal fundamental del derecho penal costarricense, aunque se encuentra en constante evolución a través de reformas para abordar problemáticas sociales y legales contemporáneas. 

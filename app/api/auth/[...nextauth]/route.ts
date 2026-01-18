@@ -74,24 +74,54 @@ export const authOptions: NextAuthOptions = {
       return true
     },
 
-    async session({ session, token, user }) {
-      // En estrategia JWT, el user viene en el token
+    async session({ session, token }) {
       if (session.user && token) {
-        session.user.id = token.sub || ''
-        session.user.role = token.role as any || 'CLIENT'
+        session.user.id = token.id as string
+        session.user.role = (token.role as any) || 'CLIENT'
         session.user.tokens = (token.tokens as number) || 0
       }
       return session
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id
         token.role = user.role
         token.tokens = user.tokens
       }
+
+      // Manejar actualizaciones manuales de sesión si es necesario
+      if (trigger === 'update' && session) {
+        return { ...token, ...session.user }
+      }
+
       return token
     },
+  },
+
+  events: {
+    async createUser({ user }) {
+      // Crear plan FREE para nuevos usuarios (incluyendo OAuth)
+      try {
+        await prisma.subscription.upsert({
+          where: { userId: user.id },
+          update: {},
+          create: {
+            userId: user.id,
+            plan: 'FREE',
+            status: 'ACTIVE',
+            tokens: 100,
+          }
+        })
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { tokens: 100 }
+        })
+      } catch (error) {
+        console.error('Error in createUser event:', error)
+      }
+    }
   },
 
   pages: {

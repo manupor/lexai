@@ -62,18 +62,7 @@ export const authOptions: NextAuthOptions = {
     })
   ],
 
-  // Forzar cookies seguras en producción para evitar problemas de SameSite/Secure
-  cookies: {
-    sessionToken: {
-      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      },
-    },
-  },
+  // Cookies managed automatically by NextAuth (defaults are secure in production)
 
   callbacks: {
     async signIn({ user, account, profile }) {

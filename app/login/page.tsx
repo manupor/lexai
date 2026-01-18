@@ -67,7 +67,7 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full bg-white text-slate-900 border-slate-200 hover:bg-slate-50"
             onClick={() => handleOAuthSignIn('google')}
             disabled={isLoading}
           >
@@ -105,7 +105,7 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full bg-white text-slate-900 border-slate-200 hover:bg-slate-50"
             onClick={() => handleOAuthSignIn('facebook')}
             disabled={isLoading}
           >

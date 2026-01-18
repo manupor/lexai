@@ -84,7 +84,7 @@ export default function Home() {
             {session ? (
               <>
                 <Link href="/dashboard">
-                  <Button variant="ghost">{t.dashboard.title}</Button>
+                  <Button variant="ghost" className="text-white hover:text-cyan-200 hover:bg-white/10">{t.dashboard.title}</Button>
                 </Link>
                 <Link href="/dashboard">
                   <Avatar className="h-9 w-9 cursor-pointer">
@@ -98,7 +98,7 @@ export default function Home() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost">{t.home.cta}</Button>
+                  <Button variant="ghost" className="text-white hover:text-cyan-200 hover:bg-white/10">{t.home.cta}</Button>
                 </Link>
                 <Link href="/login">
                   <Button>{t.home.cta}</Button>
@@ -165,7 +165,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button size="lg" variant="outline" className="bg-transparent border-blue-400/50 text-white hover:bg-blue-500/10 hover:text-cyan-200 backdrop-blur-sm">
+                <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 font-semibold border-0">
                   {t.home.demo}
                 </Button>
               </motion.div>

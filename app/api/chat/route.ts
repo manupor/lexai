@@ -22,14 +22,16 @@ import { prisma } from '@/lib/prisma'
 const CODE_MAP: Record<string, string> = {
   'codigo-civil': 'codigo-civil',
   'codigo-comercio': 'codigo-comercio',
-  'codigo-trabajo': 'codigo-trabajo'
+  'codigo-trabajo': 'codigo-trabajo',
+  'codigo-procesal-penal': 'codigo-procesal-penal'
 }
 
 // Mapeo de códigos a nombres completos
 const CODE_NAMES: Record<string, string> = {
   'codigo-civil': 'Código Civil de Costa Rica (Ley N° 63)',
   'codigo-comercio': 'Código de Comercio de Costa Rica (Ley N° 3284)',
-  'codigo-trabajo': 'Código de Trabajo de Costa Rica (Ley N° 2)'
+  'codigo-trabajo': 'Código de Trabajo de Costa Rica (Ley N° 2)',
+  'codigo-procesal-penal': 'Código Procesal Penal de Costa Rica (Ley N° 7594)'
 }
 
 // Buscar artículo por número en la base de datos
@@ -40,22 +42,22 @@ async function searchLegalArticle(codeName: string, articleNumber: string) {
       console.log(`Código no encontrado: ${codeName}`)
       return null
     }
-    
+
     console.log(`Buscando artículo ${articleNumber} en código ${codeId}`)
-    
+
     const article = await prisma.article.findFirst({
       where: {
         legalCode: { code: codeId },
         number: articleNumber
       }
     })
-    
+
     if (article) {
       console.log(`✅ Artículo ${articleNumber} encontrado en ${codeName}`)
     } else {
       console.log(`❌ Artículo ${articleNumber} NO encontrado en ${codeName}`)
     }
-    
+
     return article ? { number: article.number, content: article.content } : null
   } catch (error) {
     console.error(`Error buscando artículo ${articleNumber} en ${codeName}:`, error)
@@ -68,7 +70,7 @@ async function searchLegalByKeyword(codeName: string, keyword: string, maxResult
   try {
     const codeId = CODE_MAP[codeName]
     if (!codeId) return []
-    
+
     const articles = await prisma.article.findMany({
       where: {
         legalCode: { code: codeId },
@@ -76,9 +78,9 @@ async function searchLegalByKeyword(codeName: string, keyword: string, maxResult
       },
       take: maxResults
     })
-    
+
     console.log(`Búsqueda keyword "${keyword}" en ${codeName}: ${articles.length} resultados`)
-    
+
     return articles.map((a: any) => ({ number: a.number, content: a.content }))
   } catch (error) {
     console.error(`Error buscando keyword "${keyword}" en ${codeName}:`, error)
@@ -120,43 +122,50 @@ export async function POST(request: NextRequest) {
     // ============================================================
     // LEGAL CONTEXT RETRIEVAL - NEW ARCHITECTURE
     // ============================================================
-    
+
     let additionalContext = ''
     let foundRelevantLaw = false
-    
+
     // 1. Detect if user asks for specific article number
     // Match variations: artículo, articulo, articuli, art, etc.
     const articleMatch = message.match(/art[íi]cul?[oi]?\s+(\d+)/i)
-    
+
     if (articleMatch) {
       const articleNumber = articleMatch[1]
-      
+
       // Try Código Civil first
       const civilArticle = await searchLegalArticle('codigo-civil', articleNumber)
       if (civilArticle) {
         foundRelevantLaw = true
         additionalContext += `\n\n${formatArticleForChat(civilArticle, 'codigo-civil')}\n`
       }
-      
+
       // Try Código de Comercio
       const comercioArticle = await searchLegalArticle('codigo-comercio', articleNumber)
       if (comercioArticle) {
         foundRelevantLaw = true
         additionalContext += `\n\n${formatArticleForChat(comercioArticle, 'codigo-comercio')}\n`
       }
-      
+
       // Try Código de Trabajo
       const trabajoArticle = await searchLegalArticle('codigo-trabajo', articleNumber)
       if (trabajoArticle) {
         foundRelevantLaw = true
         additionalContext += `\n\n${formatArticleForChat(trabajoArticle, 'codigo-trabajo')}\n`
       }
-      
+
+      // Try Código Procesal Penal
+      const penalArticle = await searchLegalArticle('codigo-procesal-penal', articleNumber)
+      if (penalArticle) {
+        foundRelevantLaw = true
+        additionalContext += `\n\n${formatArticleForChat(penalArticle, 'codigo-procesal-penal')}\n`
+      }
+
       if (foundRelevantLaw) {
         additionalContext = `🎯 ARTÍCULO ENCONTRADO - CITA TEXTUALMENTE:\n${additionalContext}`
       }
     }
-    
+
     // 2. If no specific article, do keyword search
     if (!foundRelevantLaw) {
       // Extract keywords from query
@@ -165,7 +174,7 @@ export async function POST(request: NextRequest) {
         .split(/\s+/)
         .filter((w: string) => w.length > 4)
         .slice(0, 3)
-      
+
       for (const keyword of keywords) {
         // Search in Código Civil
         const civilResults = await searchLegalByKeyword('codigo-civil', keyword, 2)
@@ -173,25 +182,32 @@ export async function POST(request: NextRequest) {
           foundRelevantLaw = true
           additionalContext += `\n\n${formatArticleForChat(article, 'codigo-civil')}\n`
         })
-        
+
         // Search in Código de Comercio
         const comercioResults = await searchLegalByKeyword('codigo-comercio', keyword, 2)
         comercioResults.forEach((article: { number: string; content: string }) => {
           foundRelevantLaw = true
           additionalContext += `\n\n${formatArticleForChat(article, 'codigo-comercio')}\n`
         })
-        
+
         // Search in Código de Trabajo
         const trabajoResults = await searchLegalByKeyword('codigo-trabajo', keyword, 2)
         trabajoResults.forEach((article: { number: string; content: string }) => {
           foundRelevantLaw = true
           additionalContext += `\n\n${formatArticleForChat(article, 'codigo-trabajo')}\n`
         })
-        
+
+        // Search in Código Procesal Penal
+        const penalResults = await searchLegalByKeyword('codigo-procesal-penal', keyword, 2)
+        penalResults.forEach((article: { number: string; content: string }) => {
+          foundRelevantLaw = true
+          additionalContext += `\n\n${formatArticleForChat(article, 'codigo-procesal-penal')}\n`
+        })
+
         if (foundRelevantLaw) break // Stop after first keyword with results
       }
     }
-    
+
     // 3. Add instructions based on whether we found legal context
     if (foundRelevantLaw) {
       additionalContext = `═══════════════════════════════════════════════════════════════
@@ -265,7 +281,7 @@ ${additionalContext}
     })
   } catch (error: any) {
     console.error('Error en chat API:', error)
-    
+
     // Manejar errores específicos de OpenAI
     if (error.code === 'invalid_api_key') {
       return NextResponse.json(
@@ -273,7 +289,7 @@ ${additionalContext}
         { status: 401 }
       )
     }
-    
+
     if (error.code === 'insufficient_quota') {
       return NextResponse.json(
         { error: 'Sin créditos en OpenAI. Por favor agrega créditos en https://platform.openai.com/account/billing' },

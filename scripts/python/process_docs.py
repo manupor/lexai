@@ -146,6 +146,12 @@ def main():
             "output": "codigo-civil",
             "name": "Código Civil de Costa Rica",
             "number": "Ley N° 63"
+        },
+        {
+            "pdf": "codigo-procesal-penal.pdf",
+            "output": "codigo-procesal-penal",
+            "name": "Código Procesal Penal de Costa Rica",
+            "number": "Ley N° 7594"
         }
     ]
     

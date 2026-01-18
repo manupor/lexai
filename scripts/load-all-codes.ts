@@ -48,6 +48,11 @@ const CODES_TO_LOAD = [
     code: 'codigo-trabajo',
     category: 'LABORAL' as const,
   },
+  {
+    file: 'codigo-procesal-penal.json',
+    code: 'codigo-procesal-penal',
+    category: 'PENAL' as const,
+  },
 ]
 
 async function loadAllCodes() {
@@ -74,7 +79,7 @@ async function loadAllCodes() {
 
       if (existingCode) {
         console.log(`   ⚠️  Código ya existe, actualizando...`)
-        
+
         // Delete old articles
         await prisma.article.deleteMany({
           where: { legalCodeId: existingCode.id },
@@ -92,7 +97,7 @@ async function loadAllCodes() {
         })
       } else {
         console.log(`   ✨ Creando nuevo código...`)
-        
+
         legalCode = await prisma.legalCode.create({
           data: {
             code: codeConfig.code,
@@ -112,9 +117,9 @@ async function loadAllCodes() {
         .map((article) => {
           const articleNumber = String(article.article || article.number || 0)
           const articleContent = article.text || article.content || ''
-          
+
           if (!articleContent) return null
-          
+
           return {
             legalCodeId: legalCode.id,
             number: articleNumber,

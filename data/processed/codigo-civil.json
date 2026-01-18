@@ -1,8 +1,8 @@
 {
   "name": "Código Civil de Costa Rica",
   "law_number": "Ley N° 63",
-  "extracted_at": "2026-01-17T17:30:50.289451",
-  "total_articles": 1179,
+  "extracted_at": "2026-01-17T23:38:30.793830",
+  "total_articles": 1180,
   "articles": [
     {
       "number": "1",
@@ -442,7 +442,12 @@
     {
       "number": "258",
       "title": "Artículo 258",
-      "content": "Cosas corporales son todas, excepto los derechos reales y persona- les, que son cosas incorporales. Articulo 259 Derecho real es el que se tiene en una cosa, o contra una cosa sin relación a determinada persona. Todo derecho real supone el dominio o la limitación de alguno o algunos de los derechos que éste compren- de. El derecho real puede constituirse para garantizar una obligación puramente personal."
+      "content": "Cosas corporales son todas, excepto los derechos reales y persona- les, que son cosas incorporales."
+    },
+    {
+      "number": "259",
+      "title": "Articulo 259",
+      "content": "Derecho real es el que se tiene en una cosa, o contra una cosa sin relación a determinada persona. Todo derecho real supone el dominio o la limitación de alguno o algunos de los derechos que éste compren- de. El derecho real puede constituirse para garantizar una obligación puramente personal."
     },
     {
       "number": "260",

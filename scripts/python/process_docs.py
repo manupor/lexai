@@ -64,7 +64,8 @@ def parse_articles(text, pattern_type="standard"):
     
     if pattern_type == "standard":
         # Supports "Artículo 1.", "Artículo 1-", "Artículo 1:"
-        pattern = re.compile(r'(Artículo\s+\d+[\.\-:]?)\s*(.*?)(?=\n\s*Artículo\s+\d+[\.\-:]?|$)', re.DOTALL | re.IGNORECASE)
+        # Also supports "ARTICULO" (no accent)
+        pattern = re.compile(r'((?:Art[íi]culo|ARTICULO)\s+\d+[\.\-:]?)\s*(.*?)(?=\n\s*(?:Art[íi]culo|ARTICULO)\s+\d+[\.\-:]?|$)', re.DOTALL | re.IGNORECASE)
     
     matches = pattern.finditer(text)
     
@@ -96,7 +97,12 @@ def process_law(pdf_name, output_name, law_name, law_number):
         return
         
     # 1. Extract Text
-    raw_text = extract_text_from_pdf(pdf_path)
+    if pdf_name.endswith('.txt'):
+        print(f"📄 Reading text file: {pdf_name}")
+        with open(pdf_path, 'r', encoding='utf-8') as f:
+            raw_text = f.read()
+    else:
+        raw_text = extract_text_from_pdf(pdf_path)
     
     # Save raw text for debugging
     txt_path = os.path.join(TEXT_DIR, f"{output_name}.txt")
@@ -148,7 +154,7 @@ def main():
             "number": "Ley N° 63"
         },
         {
-            "pdf": "codigo-procesal-penal.pdf",
+            "pdf": "codigo-procesal-penal.txt",
             "output": "codigo-procesal-penal",
             "name": "Código Procesal Penal de Costa Rica",
             "number": "Ley N° 7594"

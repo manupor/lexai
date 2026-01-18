@@ -40,7 +40,7 @@ export default function PricingPage() {
         },
         {
             name: 'Profesional',
-            price: '$49',
+            price: '$35',
             period: '/mes',
             description: 'Para abogados y profesionales',
             features: [
@@ -57,7 +57,7 @@ export default function PricingPage() {
         },
         {
             name: 'Empresarial',
-            price: '$199',
+            price: '$50',
             period: '/mes',
             description: 'Para firmas y equipos',
             features: [

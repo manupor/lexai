@@ -158,6 +158,12 @@ def main():
             "output": "codigo-procesal-penal",
             "name": "Código Procesal Penal de Costa Rica",
             "number": "Ley N° 7594"
+        },
+        {
+            "pdf": "codigo-penal.txt",
+            "output": "codigo-penal",
+            "name": "Código Penal de Costa Rica",
+            "number": "Ley N° 4573"
         }
     ]
     

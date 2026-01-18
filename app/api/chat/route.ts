@@ -23,7 +23,8 @@ const CODE_MAP: Record<string, string> = {
   'codigo-civil': 'codigo-civil',
   'codigo-comercio': 'codigo-comercio',
   'codigo-trabajo': 'codigo-trabajo',
-  'codigo-procesal-penal': 'codigo-procesal-penal'
+  'codigo-procesal-penal': 'codigo-procesal-penal',
+  'codigo-penal': 'codigo-penal'
 }
 
 // Mapeo de códigos a nombres completos
@@ -31,7 +32,8 @@ const CODE_NAMES: Record<string, string> = {
   'codigo-civil': 'Código Civil de Costa Rica (Ley N° 63)',
   'codigo-comercio': 'Código de Comercio de Costa Rica (Ley N° 3284)',
   'codigo-trabajo': 'Código de Trabajo de Costa Rica (Ley N° 2)',
-  'codigo-procesal-penal': 'Código Procesal Penal de Costa Rica (Ley N° 7594)'
+  'codigo-procesal-penal': 'Código Procesal Penal de Costa Rica (Ley N° 7594)',
+  'codigo-penal': 'Código Penal de Costa Rica (Ley N° 4573)'
 }
 
 // Buscar artículo por número en la base de datos
@@ -125,6 +127,7 @@ export async function POST(request: NextRequest) {
 
     let additionalContext = ''
     let foundRelevantLaw = false
+    const lowerQuery = message.toLowerCase()
 
     // 1. Detect if user asks for specific article number
     // Match variations: artículo, articulo, articuli, art, etc.
@@ -148,17 +151,68 @@ export async function POST(request: NextRequest) {
       }
 
       // Try Código de Trabajo
-      const trabajoArticle = await searchLegalArticle('codigo-trabajo', articleNumber)
-      if (trabajoArticle) {
-        foundRelevantLaw = true
-        additionalContext += `\n\n${formatArticleForChat(trabajoArticle, 'codigo-trabajo')}\n`
+      let targetCodeName: string | null = null;
+
+      // Prioritize specific code mentions
+      if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) {
+        console.log('Detectado: Código Procesal Penal')
+        targetCodeName = 'codigo-procesal-penal'
+      } else if (/(penal|cp)/i.test(lowerQuery)) {
+        console.log('Detectado: Código Penal')
+        targetCodeName = 'codigo-penal'
+      } else if (/(civil|cc)/i.test(lowerQuery)) {
+        console.log('Detectado: Código Civil')
+        targetCodeName = 'codigo-civil'
+      } else if (/(comercio|comercial)/i.test(lowerQuery)) {
+        console.log('Detectado: Código de Comercio')
+        targetCodeName = 'codigo-comercio'
+      } else if (/(trabajo|laboral)/i.test(lowerQuery)) {
+        console.log('Detectado: Código de Trabajo')
+        targetCodeName = 'codigo-trabajo'
       }
 
-      // Try Código Procesal Penal
-      const penalArticle = await searchLegalArticle('codigo-procesal-penal', articleNumber)
-      if (penalArticle) {
-        foundRelevantLaw = true
-        additionalContext += `\n\n${formatArticleForChat(penalArticle, 'codigo-procesal-penal')}\n`
+      if (targetCodeName) {
+        const article = await searchLegalArticle(targetCodeName, articleNumber);
+        if (article) {
+          foundRelevantLaw = true;
+          additionalContext += `\n\n${formatArticleForChat(article, targetCodeName)}\n`;
+        }
+      } else {
+        // If no specific code mentioned, try all codes
+        // Try Código Civil first
+        const civilArticle = await searchLegalArticle('codigo-civil', articleNumber)
+        if (civilArticle) {
+          foundRelevantLaw = true
+          additionalContext += `\n\n${formatArticleForChat(civilArticle, 'codigo-civil')}\n`
+        }
+
+        // Try Código de Comercio
+        const comercioArticle = await searchLegalArticle('codigo-comercio', articleNumber)
+        if (comercioArticle) {
+          foundRelevantLaw = true
+          additionalContext += `\n\n${formatArticleForChat(comercioArticle, 'codigo-comercio')}\n`
+        }
+
+        // Try Código de Trabajo
+        const trabajoArticle = await searchLegalArticle('codigo-trabajo', articleNumber)
+        if (trabajoArticle) {
+          foundRelevantLaw = true
+          additionalContext += `\n\n${formatArticleForChat(trabajoArticle, 'codigo-trabajo')}\n`
+        }
+
+        // Try Código Procesal Penal
+        const penalProcesalArticle = await searchLegalArticle('codigo-procesal-penal', articleNumber)
+        if (penalProcesalArticle) {
+          foundRelevantLaw = true
+          additionalContext += `\n\n${formatArticleForChat(penalProcesalArticle, 'codigo-procesal-penal')}\n`
+        }
+
+        // Try Código Penal
+        const penalArticle = await searchLegalArticle('codigo-penal', articleNumber)
+        if (penalArticle) {
+          foundRelevantLaw = true
+          additionalContext += `\n\n${formatArticleForChat(penalArticle, 'codigo-penal')}\n`
+        }
       }
 
       if (foundRelevantLaw) {

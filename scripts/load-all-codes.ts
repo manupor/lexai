@@ -53,6 +53,11 @@ const CODES_TO_LOAD = [
     code: 'codigo-procesal-penal',
     category: 'PENAL' as const,
   },
+  {
+    file: 'codigo-penal.json',
+    code: 'codigo-penal',
+    category: 'PENAL' as const,
+  },
 ]
 
 async function loadAllCodes() {

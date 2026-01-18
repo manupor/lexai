@@ -17,13 +17,13 @@ export default function Home() {
   const { data: session, status } = useSession()
   const { t } = useLanguage()
   const [scrollY, setScrollY] = useState(0)
-  
+
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-  
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -64,14 +64,14 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <motion.header 
+      <motion.header
         className="border-b border-white/10 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <motion.div 
+          <motion.div
             className="flex items-center gap-2"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400 }}
@@ -110,7 +110,7 @@ export default function Home() {
       </motion.header>
 
       {/* Hero Section */}
-      <motion.section 
+      <motion.section
         className="container mx-auto px-4 py-20 text-center relative z-10"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -118,7 +118,7 @@ export default function Home() {
         style={{ transform: `translateY(${scrollY * 0.5}px)` }}
       >
         <div className="mx-auto max-w-3xl">
-          <motion.div 
+          <motion.div
             className="mb-6 flex justify-center"
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
@@ -128,7 +128,7 @@ export default function Home() {
               <Sparkles className="h-12 w-12 text-cyan-400" />
             </div>
           </motion.div>
-          <motion.h1 
+          <motion.h1
             className="mb-6 text-5xl font-bold leading-tight text-white md:text-6xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -136,7 +136,7 @@ export default function Home() {
           >
             {t.home.title}
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="mb-8 text-xl text-gray-300"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -144,7 +144,7 @@ export default function Home() {
           >
             {t.home.subtitle}
           </motion.p>
-          <motion.div 
+          <motion.div
             className="flex justify-center gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -165,7 +165,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button size="lg" variant="outline" className="border-blue-400/50 text-white hover:bg-blue-500/10">
+                <Button size="lg" variant="outline" className="bg-transparent border-blue-400/50 text-white hover:bg-blue-500/10 hover:text-cyan-200 backdrop-blur-sm">
                   {t.home.demo}
                 </Button>
               </motion.div>
@@ -175,14 +175,14 @@ export default function Home() {
       </motion.section>
 
       {/* Features Section */}
-      <motion.section 
+      <motion.section
         className="container mx-auto px-4 py-20 relative z-10"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
-        <motion.h2 
+        <motion.h2
           className="mb-12 text-center text-3xl font-bold text-white"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -232,14 +232,14 @@ export default function Home() {
       </motion.section>
 
       {/* Pricing Section */}
-      <motion.section 
+      <motion.section
         className="container mx-auto px-4 py-20 relative z-10"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
-        <motion.h2 
+        <motion.h2
           className="mb-12 text-center text-3xl font-bold text-white"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -300,9 +300,9 @@ export default function Home() {
           <p>&copy; 2024 LexAI Costa Rica. {t.home.footer.rights}</p>
           <p className="mt-2 text-sm">
             {t.home.footer.designedBy}{' '}
-            <a 
-              href="https://manuportuguez.com" 
-              target="_blank" 
+            <a
+              href="https://manuportuguez.com"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 hover:text-blue-300 transition-colors"
             >

@@ -4,12 +4,17 @@ import FacebookProvider from 'next-auth/providers/facebook'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { prisma } from '@/lib/prisma'
+
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
   providers: [
     // Google OAuth
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
           prompt: 'consent',
@@ -18,68 +23,88 @@ export const authOptions: NextAuthOptions = {
         }
       }
     }),
-    
+
     // Facebook OAuth
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID || '',
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
     }),
-    
-    // Credentials (email/password tradicional) - Deshabilitado por ahora
-    // CredentialsProvider({
-    //   name: 'Credentials',
-    //   credentials: {
-    //     email: { label: 'Email', type: 'email' },
-    //     password: { label: 'Password', type: 'password' }
-    //   },
-    //   async authorize(credentials) {
-    //     // Por implementar con base de datos
-    //     return null
-    //   }
-    // })
+
+    // Credentials (email/password)
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Email y contraseña requeridos')
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email }
+        })
+
+        if (!user || !user.password) {
+          throw new Error('Usuario no encontrado o contraseña incorrecta')
+        }
+
+        const isValid = await bcrypt.compare(credentials.password, user.password)
+
+        if (!isValid) {
+          throw new Error('Contraseña incorrecta')
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          role: user.role,
+          tokens: user.tokens
+        }
+      }
+    })
   ],
-  
+
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Por ahora, simplemente permitir el login
       return true
     },
-    
-    async session({ session, token }) {
+
+    async session({ session, token, user }) {
+      // En estrategia JWT, el user viene en el token
       if (session.user && token) {
         session.user.id = token.sub || ''
-        session.user.role = 'CLIENT'
-        session.user.tokens = 100 // Tokens por defecto
-        session.user.subscription = {
-          id: '1',
-          plan: 'FREE',
-          status: 'ACTIVE',
-          tokens: 100,
-          currentPeriodEnd: null
-        }
+        session.user.role = token.role as any || 'CLIENT'
+        session.user.tokens = (token.tokens as number) || 0
       }
       return session
     },
-    
+
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.tokens = user.tokens
       }
       return token
-    }
+    },
   },
-  
+
   pages: {
     signIn: '/login',
     error: '/login',
+    newUser: '/register'
   },
-  
+
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
-  
+
   secret: process.env.NEXTAUTH_SECRET,
 }
 

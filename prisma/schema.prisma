@@ -27,6 +27,7 @@ model User {
   sessions      Session[] // Para NextAuth sessions
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  cases         Case[]
 }
 
 model Account {
@@ -97,10 +98,61 @@ enum SubscriptionStatus {
   EXPIRED
 }
 
+model Case {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?      @db.Text
+  status      CaseStatus  @default(OPEN)
+  matter      LegalMatter @default(OTHER)
+  type        CaseType    @default(OTRO)
+  clientName  String?
+  conversations Conversation[]
+  documents    Document[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+enum CaseStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  ARCHIVED
+}
+
+enum LegalMatter {
+  PENAL
+  CIVIL
+  LABORAL
+  FAMILIA
+  COMERCIAL
+  ADMINISTRATIVO
+  CONSTITUCIONAL
+  TRANSITO
+  MIGRATORIO
+  AGRARIO
+  AMBIENTAL
+  NOTARIAL
+  OTHER
+}
+
+enum CaseType {
+  LITIGIO
+  CONSULTORIA
+  APELACION
+  CONTRATO
+  TRAMITE
+  DICTAMEN
+  OTRO
+}
+
 model Conversation {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId    String?
+  case      Case?     @relation(fields: [caseId], references: [id])
   title     String
   messages  Message[]
   createdAt DateTime  @default(now())
@@ -127,6 +179,8 @@ model Document {
   id          String       @id @default(cuid())
   userId      String
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId      String?
+  case        Case?        @relation(fields: [caseId], references: [id])
   title       String
   content     String       @db.Text
   type        DocumentType

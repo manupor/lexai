@@ -24,7 +24,7 @@ export default function RegisterPage() {
         try {
             setIsLoading(true)
             setLoadingProvider(provider)
-            await signIn(provider, { callbackUrl: '/dashboard' })
+            await signIn(provider, { callbackUrl: '/onboarding' })
         } catch (error) {
             console.error('Error signing in:', error)
             setError('Error al registrarse. Por favor intenta de nuevo.')
@@ -74,14 +74,14 @@ export default function RegisterPage() {
             const result = await signIn('credentials', {
                 email,
                 password,
-                callbackUrl: '/dashboard',
+                callbackUrl: '/onboarding',
                 redirect: false,
             })
 
             if (result?.error) {
                 setError('Registro exitoso pero error al iniciar sesión')
             } else if (result?.ok) {
-                router.push('/dashboard')
+                router.push('/onboarding')
             }
         } catch (error: any) {
             console.error('Error registering:', error)

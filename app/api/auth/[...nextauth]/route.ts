@@ -56,7 +56,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           image: user.image,
           role: user.role,
-          tokens: user.tokens
+          tokens: user.tokens,
+          organizationId: user.organizationId
         }
       }
     })
@@ -75,6 +76,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.role = (token.role as any) || 'CLIENT'
         session.user.tokens = (token.tokens as number) || 0
+        session.user.organizationId = (token.organizationId as string) || null
       }
       return session
     },
@@ -84,6 +86,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.role = user.role
         token.tokens = user.tokens
+        token.organizationId = (user as any).organizationId
       }
 
       // Manejar actualizaciones manuales de sesión si es necesario

@@ -11,6 +11,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { openai, LEGAL_SYSTEM_PROMPT } from '@/lib/openai'
 import { readFileSync } from 'fs'
 import { join } from 'path'
@@ -540,33 +542,48 @@ Por favor, utiliza la estructura de "Análisis de LexAI" con:
     let finalMessageId: string | null = null
 
     try {
-      // 1. Ensure Organization exists for Beta
-      const org = await prisma.organization.upsert({
-        where: { slug: 'valverde-asociados' },
-        update: {},
-        create: {
-          name: 'Valverde & Asociados',
-          slug: 'valverde-asociados',
-          plan: 'PROFESSIONAL'
-        }
-      })
+      const session = await getServerSession(authOptions)
+      let userId: string
+      let organizationId: string
 
-      // 2. Ensure Beta User belongs to Org
-      const user = await prisma.user.upsert({
-        where: { email: 'beta-litigante@lexai.cr' },
-        update: { organizationId: org.id },
-        create: {
-          email: 'beta-litigante@lexai.cr',
-          name: 'Beta Tester (Lara)',
-          role: 'LAWYER',
-          organizationId: org.id
+      if (session?.user) {
+        userId = session.user.id
+
+        if (session.user.organizationId) {
+          organizationId = session.user.organizationId
+        } else {
+          const guestOrg = await prisma.organization.upsert({
+            where: { slug: 'valverde-asociados' },
+            update: {},
+            create: { name: 'Valverde & Asociados', slug: 'valverde-asociados', plan: 'PROFESSIONAL' }
+          })
+          organizationId = guestOrg.id
         }
-      })
+      } else {
+        const guestOrg = await prisma.organization.upsert({
+          where: { slug: 'valverde-asociados' },
+          update: {},
+          create: { name: 'Valverde & Asociados', slug: 'valverde-asociados', plan: 'PROFESSIONAL' }
+        })
+        organizationId = guestOrg.id
+
+        const guestUser = await prisma.user.upsert({
+          where: { email: 'beta-litigante@lexai.cr' },
+          update: { organizationId: guestOrg.id },
+          create: {
+            email: 'beta-litigante@lexai.cr',
+            name: 'Beta Tester (Lara)',
+            role: 'LAWYER',
+            organizationId: guestOrg.id
+          }
+        })
+        userId = guestUser.id
+      }
 
       const targetConversationId = conversationId || (await prisma.conversation.create({
         data: {
-          userId: user.id,
-          organizationId: org.id,
+          userId: userId,
+          organizationId: organizationId,
           title: message.substring(0, 50) + '...',
           matter: detectedMatter
         }

@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -186,20 +188,55 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
     }
   }
 
+  const { data: session } = useSession()
+  const router = useRouter()
+
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       {/* Workspace Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-[10px]">VA</div>
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest">Valverde & Asociados</span>
-          <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 text-[10px] font-black uppercase tracking-tighter">Beta Privada</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-slate-500 font-medium">Lara Valverde</span>
-            <span className="text-[8px] text-blue-600 font-bold uppercase">Socio Principal</span>
+          <div className="h-6 w-6 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-[10px]">
+            {session?.user?.organizationId ? "FW" : "LX"}
           </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest">
+              {session?.user?.organizationId ? "Espacio de Trabajo Legal" : "LexAI Costa Rica"}
+            </span>
+            {session?.user?.organizationId && (
+              <span className="text-[8px] text-blue-600 dark:text-blue-400 font-bold uppercase -mt-0.5">
+                Firma Conectada
+              </span>
+            )}
+          </div>
+          {!session?.user?.organizationId && session?.user && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 px-2 text-[9px] border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+              onClick={() => router.push("/onboarding")}
+            >
+              Configurar Firma
+            </Button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
+          {session?.user ? (
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] text-slate-700 dark:text-slate-200 font-bold">{session.user.name}</span>
+              <span className="text-[8px] text-slate-500 font-medium uppercase tracking-tighter">Abogado Autorizado</span>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[10px] h-7"
+              onClick={() => router.push("/login")}
+            >
+              Iniciar Sesión
+            </Button>
+          )}
         </div>
       </div>
 

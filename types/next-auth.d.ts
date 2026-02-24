@@ -11,6 +11,7 @@ declare module 'next-auth' {
       image?: string | null
       role: UserRole
       tokens: number
+      organizationId: string | null
       subscription?: {
         id: string
         plan: SubscriptionPlan
@@ -28,6 +29,7 @@ declare module 'next-auth' {
     image?: string | null
     role: UserRole
     tokens: number
+    organizationId: string | null
   }
 }
 
@@ -36,5 +38,6 @@ declare module 'next-auth/jwt' {
     id: string
     role: UserRole
     tokens: number
+    organizationId: string | null
   }
 }

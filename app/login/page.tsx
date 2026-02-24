@@ -17,7 +17,7 @@ export default function LoginPage() {
     try {
       setIsLoading(true)
       setLoadingProvider(provider)
-      await signIn(provider, { callbackUrl: '/dashboard' })
+      await signIn(provider, { callbackUrl: '/onboarding' })
     } catch (error) {
       console.error('Error signing in:', error)
       alert('Error al iniciar sesión. Por favor intenta de nuevo.')
@@ -34,7 +34,7 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        callbackUrl: '/dashboard',
+        callbackUrl: '/onboarding',
         redirect: false,
       })
 

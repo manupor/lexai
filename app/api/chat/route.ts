@@ -213,6 +213,8 @@ export async function POST(request: NextRequest) {
     // --- STEP 1: ARTICLE NUMBER DETECTION ---
     const articleRefs: number[] = []
     let detectedCodeName: string | null = null
+    let historyCodeName: string | null = null
+    let contextualAlert = ''
 
     // 1a. Detect in current message
     const artRegex = /(?:art[íi]culo|art[íi]culos|artícu|art[s\.]?)\.?\s*(\d+)(?:\s*(?:a|al|y|hasta\s*el)\s*(\d+))?/gi
@@ -228,40 +230,51 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1b. If no article in current message, check history for follow-ups (e.g. "eso no dice", "explícame")
+    // 1b. Check history for code context (to prevent mixing Penal vs Procesal Penal)
+    if (messages.length > 0) {
+      for (let i = messages.length - 1; i >= Math.max(0, messages.length - 5); i--) {
+        const hMsg = messages[i].content.toLowerCase()
+        if (hMsg.includes('procesal penal') || hMsg.includes('cpp')) { historyCodeName = 'codigo-procesal-penal'; break; }
+        if (hMsg.includes('código penal') || hMsg.includes('cp ')) { historyCodeName = 'codigo-penal'; break; }
+        if (hMsg.includes('civil') || hMsg.includes('cc ')) { historyCodeName = 'codigo-civil'; break; }
+        if (hMsg.includes('comercio')) { historyCodeName = 'codigo-comercio'; break; }
+        if (hMsg.includes('trabajo')) { historyCodeName = 'codigo-trabajo'; break; }
+      }
+    }
+
+    // 1c. If no article in current message, check history for follow-ups
     if (articleRefs.length === 0 && messages.length > 0) {
-      // Look back through the last 3 messages to find a cited article
       for (let i = messages.length - 1; i >= Math.max(0, messages.length - 3); i--) {
-        const msg = messages[i]
-        const historyMatch = msg.content.match(/art[íi]culo\s+(\d+)/i)
+        const historyMatch = messages[i].content.match(/art[íi]culo\s+(\d+)/i)
         if (historyMatch) {
-          console.log(`🔄 Seguimiento detectado: Art ${historyMatch[1]}`)
           articleRefs.push(parseInt(historyMatch[1]))
-
-          // Try to guess the code from history context
-          if (/procesal\s*penal/i.test(msg.content)) detectedCodeName = 'codigo-procesal-penal'
-          else if (/penal/i.test(msg.content)) detectedCodeName = 'codigo-penal'
-          else if (/civil/i.test(msg.content)) detectedCodeName = 'codigo-civil'
-          else if (/comercio/i.test(msg.content)) detectedCodeName = 'codigo-comercio'
-          else if (/trabajo/i.test(msg.content)) detectedCodeName = 'codigo-trabajo'
-
-          break // Found it
+          detectedCodeName = historyCodeName
+          break
         }
       }
     }
 
     if (articleRefs.length > 0) {
-      // Detect code in current message (overrides history)
+      // Detect code in CURRENT message (overrides history)
+      let currentMsgCode: string | null = null
       if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) {
-        detectedCodeName = 'codigo-procesal-penal'
+        currentMsgCode = 'codigo-procesal-penal'
       } else if (/(penal|c[oó]digo\s*penal|cp\b)/i.test(lowerQuery)) {
-        detectedCodeName = 'codigo-penal'
+        currentMsgCode = 'codigo-penal'
       } else if (/(civil|c[oó]digo\s*civil|cc\b)/i.test(lowerQuery)) {
-        detectedCodeName = 'codigo-civil'
+        currentMsgCode = 'codigo-civil'
       } else if (/(comercio|comercial)/i.test(lowerQuery)) {
-        detectedCodeName = 'codigo-comercio'
+        currentMsgCode = 'codigo-comercio'
       } else if (/(trabajo|laboral|patrono|empleado)/i.test(lowerQuery)) {
-        detectedCodeName = 'codigo-trabajo'
+        currentMsgCode = 'codigo-trabajo'
+      }
+
+      // Safe Mode Ambiguity Logic
+      if (articleRefs.length > 0 && !currentMsgCode && historyCodeName) {
+        contextualAlert = `⚠️ ALERTA CONTEXTUAL: En mensajes anteriores se hacía referencia al ${historyCodeName.replace('codigo-', '').replace('-', ' ').toUpperCase()}. Confirma si deseas el artículo de ese código o de uno distinto.`
+        detectedCodeName = historyCodeName
+      } else if (currentMsgCode) {
+        detectedCodeName = currentMsgCode
       }
 
       console.log(`🔍 Buscando artículos: ${articleRefs.join(', ')} (Código: ${detectedCodeName || 'Todos'})`)
@@ -387,7 +400,10 @@ ${additionalContext}
     // 5. Build the final grounded message
     let groundedUserMessage = message
     if (foundRelevantLaw) {
-      groundedUserMessage = `📚 **CONTEXTO LEGAL PARA TU ANÁLISIS:**\n${additionalContext}\n\n`
+      // Add contextual alert if ambiguity was detected
+      const alertSnippet = contextualAlert ? `\n\n🚨 **ALERTA DE SEGURIDAD (MODO SEGURO):**\n${contextualAlert}\n\n` : ''
+
+      groundedUserMessage = `📚 **CONTEXTO LEGAL PARA TU ANÁLISIS:**\n${alertSnippet}${additionalContext}\n\n`
 
       if (isAnalysisRequest) {
         groundedUserMessage += `🔍 **SOLICITUD DE ANÁLISIS TÉCNICO:**\nEl usuario solicita revisar/redactar un texto jurídico. 

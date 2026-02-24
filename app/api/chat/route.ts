@@ -491,25 +491,29 @@ Por favor, utiliza la estructura de "Análisis de LexAI" con:
       console.error('Error writing debug log:', e)
     }
 
-    // Llamar a OpenAI con configuración optimizada para máxima precisión
+    // --- STEP 5: OpenAI INFERENCE ---
+    const startTime = Date.now()
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o', // Usar GPT-4o para mejores resultados (más preciso que mini)
+      model: 'gpt-4o',
       messages: chatMessages,
-      temperature: 0.1, // Temperatura muy baja para máxima precisión (evita alucinaciones)
+      temperature: 0.1,
       max_tokens: 2500,
       top_p: 1.0,
     })
+    const durationMs = Date.now() - startTime
 
     let responseMessage = completion.choices[0].message.content || ''
+    const promptTokens = completion.usage?.prompt_tokens || 0
+    const completionTokens = completion.usage?.completion_tokens || 0
     const tokensUsed = completion.usage?.total_tokens || 0
 
     // --- STEP 6: METADATA PARSING & DATABASE SAVING ---
     const matterMatch = responseMessage.match(/Materia\*\*:\s*\[?([A-ZÁÉÍÓÚÑ]+)\]?/i)
     const typeMatch = responseMessage.match(/Tipo\*\*:\s*\[?([A-ZÁÉÍÓÚÑ\s]+)\]?/i)
+    const processMatch = responseMessage.match(/Proceso\*\*:\s*\[?([A-ZÁÉÍÓÚÑ\s]+)\]?/i)
     const riskMatch = responseMessage.match(/Riesgo Procesal\*\*:?\s*\[?([A-Z]+)\]?/i)
 
     const rawMatter = matterMatch ? matterMatch[1].trim().toUpperCase() : 'OTHER'
-    // Map raw content to LegalMatter enum
     const matterMap: Record<string, LegalMatter> = {
       'PENAL': LegalMatter.PENAL,
       'CIVIL': LegalMatter.CIVIL,
@@ -524,39 +528,50 @@ Por favor, utiliza la estructura de "Análisis de LexAI" con:
     }
     const detectedMatter = matterMap[rawMatter] || LegalMatter.OTHER
     const detectedType = typeMatch ? typeMatch[1].trim() : 'Consulta'
-    const detectedRiskFormatted = riskMatch ? riskMatch[1].trim().toLowerCase() : confusionRisk !== 'bajo' ? confusionRisk : 'bajo'
+    const detectedProcess = processMatch ? processMatch[1].trim() : 'no aplica'
+    const detectedRiskFormatted = riskMatch ? riskMatch[1].trim().toLowerCase() : (confusionRisk !== 'bajo' ? confusionRisk : 'bajo')
 
-    // Clean up response for the user (remove SaaS classification block)
+    // Clean up response for the user
     const cleanResponseMessage = responseMessage
       .replace(/### 📊 Clasificación SaaS[\s\S]*?(?=---|$)/i, '')
       .trim()
 
     // Database Persistence
-    try {
-      // For now we assume a guest user if no session, but we still want to log the interaction
-      // In a real SaaS, we would use the authenticated user ID
-      const tempUserId = 'guest-litigante' // Fallback for beta
+    let finalMessageId: string | null = null
 
-      // Ensure user exists (only for beta/demo purposes)
-      const user = await prisma.user.upsert({
-        where: { email: 'beta-litigante@lexai.cr' },
+    try {
+      // 1. Ensure Organization exists for Beta
+      const org = await prisma.organization.upsert({
+        where: { slug: 'valverde-asociados' },
         update: {},
         create: {
+          name: 'Valverde & Asociados',
+          slug: 'valverde-asociados',
+          plan: 'PROFESSIONAL'
+        }
+      })
+
+      // 2. Ensure Beta User belongs to Org
+      const user = await prisma.user.upsert({
+        where: { email: 'beta-litigante@lexai.cr' },
+        update: { organizationId: org.id },
+        create: {
           email: 'beta-litigante@lexai.cr',
-          name: 'Beta Tester',
-          role: 'LAWYER'
+          name: 'Beta Tester (Lara)',
+          role: 'LAWYER',
+          organizationId: org.id
         }
       })
 
       const targetConversationId = conversationId || (await prisma.conversation.create({
         data: {
           userId: user.id,
+          organizationId: org.id,
           title: message.substring(0, 50) + '...',
           matter: detectedMatter
         }
       })).id
 
-      // Save Message and its Metadata
       const savedMessage = await prisma.message.create({
         data: {
           conversationId: targetConversationId,
@@ -567,28 +582,39 @@ Por favor, utiliza la estructura de "Análisis de LexAI" con:
             create: {
               matter: detectedMatter,
               writingType: detectedType,
+              processType: detectedProcess,
               riskLevel: detectedRiskFormatted,
               isLitigantMode: /(recurso|apelaci[oó]n|excepci[oó]n|escrito|demanda|querella)/i.test(lowerQuery),
               ambiguityDetected: !!contextualAlert,
-              detectedArticles: articleRefs.map(String)
+              detectedArticles: articleRefs.map(String),
+              durationMs,
+              promptTokens,
+              completionTokens,
+              modelUsed: 'gpt-4o'
             }
           }
         }
       })
 
-      console.log(`✅ Consulta guardada con éxito: ${savedMessage.id} (Materia: ${detectedMatter})`)
+      finalMessageId = savedMessage.id
+      console.log(`✅ SaaS Analytics: ${savedMessage.id} | ${detectedMatter} | ${durationMs}ms`)
     } catch (dbError) {
-      console.error('❌ Error guardando consulta en DB:', dbError)
+      console.error('❌ Error guardando analítica:', dbError)
     }
 
     return NextResponse.json({
       message: cleanResponseMessage,
       tokensUsed,
+      durationMs,
+      messageId: finalMessageId,
       conversationId: conversationId || 'new-beta-conv',
       metadata: {
         matter: detectedMatter,
         type: detectedType,
-        risk: detectedRiskFormatted
+        process: detectedProcess,
+        risk: detectedRiskFormatted,
+        isLitigantMode: /(recurso|apelaci[oó]n|excepci[oó]n|escrito|demanda|querella)/i.test(lowerQuery),
+        isReviewMode: /(riesgo procesal|revisar escrito|auditoría|legitimación|prescripción)/i.test(lowerQuery)
       }
     })
   } catch (error: any) {

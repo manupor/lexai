@@ -45,7 +45,8 @@ Mantén un formato altamente estructurado. Si el usuario pide un análisis técn
 
 ### 📊 Clasificación SaaS (Oculta si es necesario)
 - **Materia**: [Materia detectada]
-- **Tipo**: [Tipo de escrito]
+- **Tipo**: [Tipo de escrito: Recurso, Excepción, Demanda, etc.]
+- **Proceso**: [Tipo de proceso: Monitorio, Ejecutivo, Ordinario, no aplica, etc.]
 
 ---
 ℹ️ **Herramienta de apoyo técnico-jurídico**: La responsabilidad profesional por el uso de esta información y la firma del escrito final corresponde exclusivamente al profesional responsable.`

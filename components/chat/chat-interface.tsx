@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Send, Loader2, Scale, User } from "lucide-react"
+import { Send, Loader2, Scale, User, AlertCircle, ShieldCheck, Search, CheckCircle2 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { VoiceInput } from "@/components/voice-input"
 import { VoiceModeToggle } from "@/components/voice-mode-toggle"
@@ -15,6 +15,10 @@ interface Message {
   role: "user" | "assistant"
   content: string
   tokensUsed?: number
+  messageId?: string
+  isLitigantMode?: boolean
+  isReviewMode?: boolean
+  reported?: boolean
 }
 
 interface ChatInterfaceProps {
@@ -49,7 +53,7 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
 
     try {
       setIsSpeaking(true)
-      
+
       const response = await fetch('/api/text-to-speech', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,14 +66,14 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
 
       const audioBlob = await response.blob()
       const audioUrl = URL.createObjectURL(audioBlob)
-      
+
       if (audioRef.current) {
         audioRef.current.pause()
       }
 
       const audio = new Audio(audioUrl)
       audioRef.current = audio
-      
+
       audio.onended = () => {
         setIsSpeaking(false)
         URL.revokeObjectURL(audioUrl)
@@ -118,36 +122,39 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
         role: "assistant",
         content: data.message,
         tokensUsed: data.tokensUsed,
+        messageId: data.messageId,
+        isLitigantMode: data.metadata?.isLitigantMode,
+        isReviewMode: data.metadata?.isReviewMode,
       }
 
       setMessages((prev) => [...prev, assistantMessage])
-      
+
       // Reproducir respuesta por voz si está activado
       if (voiceMode) {
         await speakText(data.message)
       }
     } catch (error: any) {
       console.error("Error:", error)
-      
+
       let errorText = "Lo siento, ocurrió un error al procesar tu consulta."
-      
+
       if (error.message.includes("API key")) {
         errorText = "⚠️ **Configuración Requerida**\n\n" +
-                   "La API key de OpenAI no está configurada correctamente.\n\n" +
-                   "**Pasos para configurar:**\n" +
-                   "1. Obtén tu API key en https://platform.openai.com/api-keys\n" +
-                   "2. Edita el archivo `.env` en la raíz del proyecto\n" +
-                   "3. Reemplaza `OPENAI_API_KEY=\"your-openai-api-key-here\"` con tu key real\n" +
-                   "4. Reinicia el servidor (`npm run dev`)\n\n" +
-                   "Consulta `CONFIGURACION_OPENAI.md` para más detalles."
+          "La API key de OpenAI no está configurada correctamente.\n\n" +
+          "**Pasos para configurar:**\n" +
+          "1. Obtén tu API key en https://platform.openai.com/api-keys\n" +
+          "2. Edita el archivo `.env` en la raíz del proyecto\n" +
+          "3. Reemplaza `OPENAI_API_KEY=\"your-openai-api-key-here\"` con tu key real\n" +
+          "4. Reinicia el servidor (`npm run dev`)\n\n" +
+          "Consulta `CONFIGURACION_OPENAI.md` para más detalles."
       } else if (error.message.includes("créditos")) {
         errorText = "⚠️ **Sin Créditos en OpenAI**\n\n" +
-                   "Tu cuenta de OpenAI no tiene créditos disponibles.\n\n" +
-                   "Agrega créditos en: https://platform.openai.com/account/billing"
+          "Tu cuenta de OpenAI no tiene créditos disponibles.\n\n" +
+          "Agrega créditos en: https://platform.openai.com/account/billing"
       } else if (error.message) {
         errorText = `⚠️ **Error**: ${error.message}`
       }
-      
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -159,8 +166,43 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
     }
   }
 
+  const handleReportError = async (messageId: string, id: string) => {
+    const comment = window.prompt("¿Cuál es el error o imprecisión que detectaste?")
+    if (!comment) return
+
+    try {
+      const response = await fetch("/api/chat/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId, comment }),
+      })
+
+      if (response.ok) {
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, reported: true } : m))
+        alert("Reporte enviado con éxito. Gracias por ayudar a mejorar LexAI.")
+      }
+    } catch (error) {
+      console.error("Error reporting:", error)
+    }
+  }
+
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+      {/* Workspace Header */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-2">
+          <div className="h-6 w-6 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-[10px]">VA</div>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest">Valverde & Asociados</span>
+          <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 text-[10px] font-black uppercase tracking-tighter">Beta Privada</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] text-slate-500 font-medium">Lara Valverde</span>
+            <span className="text-[8px] text-blue-600 font-bold uppercase">Socio Principal</span>
+          </div>
+        </div>
+      </div>
+
       <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 overscroll-contain" ref={scrollRef}>
         <div className="space-y-4">
           {messages.length === 0 && (
@@ -214,12 +256,27 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
               )}
 
               <Card
-                className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] p-3.5 sm:p-4 shadow-sm ${
-                  message.role === "user"
-                    ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white border-0"
-                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                }`}
+                className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] p-3.5 sm:p-4 shadow-sm ${message.role === "user"
+                  ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white border-0"
+                  : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                  }`}
               >
+                {(message.isLitigantMode || message.isReviewMode) && (
+                  <div className="flex flex-wrap gap-2 mb-2.5">
+                    {message.isLitigantMode && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 text-[10px] font-bold uppercase tracking-wider border border-blue-200 dark:border-blue-800">
+                        <ShieldCheck className="h-3 w-3" />
+                        Modo Litigante
+                      </div>
+                    )}
+                    {message.isReviewMode && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 text-[10px] font-bold uppercase tracking-wider border border-indigo-200 dark:border-indigo-800">
+                        <Search className="h-3 w-3" />
+                        Revisión Crítica
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="prose prose-sm dark:prose-invert max-w-none text-[13px] sm:text-sm leading-relaxed">
                   {message.role === "assistant" ? (
                     <ReactMarkdown>{message.content}</ReactMarkdown>
@@ -227,10 +284,38 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
                     <p>{message.content}</p>
                   )}
                 </div>
-                {message.tokensUsed && (
-                  <p className="mt-2 text-xs text-gray-500">
-                    Tokens usados: {message.tokensUsed}
-                  </p>
+                {message.role === "assistant" && (
+                  <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {message.tokensUsed && (
+                        <p className="text-[10px] text-gray-500 font-medium">
+                          Métrica: {message.tokensUsed} tokens
+                        </p>
+                      )}
+                    </div>
+                    {message.messageId && (
+                      <button
+                        onClick={() => handleReportError(message.messageId!, message.id)}
+                        disabled={message.reported}
+                        className={`group flex items-center gap-1.5 text-[10px] font-semibold transition-colors ${message.reported
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-slate-400 hover:text-amber-600 dark:hover:text-amber-400"
+                          }`}
+                      >
+                        {message.reported ? (
+                          <>
+                            <CheckCircle2 className="h-3 w-3" />
+                            Reportado
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="h-3 w-3 group-hover:animate-pulse" />
+                            Reportar error
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 )}
               </Card>
 
@@ -282,8 +367,8 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
             disabled={isLoading || isSpeaking}
             className="flex-1 text-sm sm:text-base h-10 sm:h-11 rounded-xl border-slate-300 dark:border-slate-700 focus-visible:ring-blue-500"
           />
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isLoading || isSpeaking || !input.trim()}
             size="default"
             className="h-10 w-10 sm:h-11 sm:w-11 p-0 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 active:scale-95 transition-all"

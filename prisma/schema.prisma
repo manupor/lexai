@@ -29,6 +29,25 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   cases         Case[]
+  
+  // Multi-tenancy
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique // Para URLs: lexai.cr/firme/valverde-asociados
+  logo        String?
+  plan        SubscriptionPlan @default(FREE)
+  users       User[]
+  conversations Conversation[]
+  cases        Case[]
+  documents    Document[]
+  inviteCode   String   @unique @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Account {
@@ -109,6 +128,8 @@ model Case {
   matter      LegalMatter @default(OTHER)
   type        CaseType    @default(OTRO)
   clientName  String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   conversations Conversation[]
   documents    Document[]
   createdAt   DateTime    @default(now())
@@ -156,6 +177,8 @@ model Conversation {
   case      Case?     @relation(fields: [caseId], references: [id])
   title     String
   matter    LegalMatter?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   messages  Message[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -170,6 +193,7 @@ model Message {
   tokensUsed     Int          @default(0)
   createdAt      DateTime     @default(now())
   metadata       MessageMetadata?
+  errorReport    ErrorReport?
 }
 
 model MessageMetadata {
@@ -178,11 +202,35 @@ model MessageMetadata {
   message           Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
   matter            LegalMatter? 
   writingType       String?      // recurso, excepcion, etc.
+  processType       String?      // monitorio, ordinario, etc.
   isLitigantMode    Boolean      @default(false)
   riskLevel         String?      // bajo, medio, alto
   ambiguityDetected Boolean      @default(false)
   detectedArticles  String[]     // Array of article numbers cited
+  
+  // Performance & Cost Metrics
+  durationMs        Int?
+  promptTokens      Int?
+  completionTokens  Int?
+  modelUsed         String?      @default("gpt-4o")
+  
   createdAt         DateTime     @default(now())
+}
+
+model ErrorReport {
+  id        String   @id @default(cuid())
+  messageId String   @unique
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  comment   String   @db.Text
+  status    ReportStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
 }
 
 enum MessageRole {
@@ -200,6 +248,8 @@ model Document {
   title       String
   content     String       @db.Text
   type        DocumentType
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   analysis    String?      @db.Text
   tokensUsed  Int          @default(0)
   createdAt   DateTime     @default(now())

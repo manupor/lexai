@@ -210,11 +210,11 @@ export async function POST(request: NextRequest) {
     let foundRelevantLaw = false
     const lowerQuery = message.toLowerCase()
 
-    // --- STEP 1: ARTICLE NUMBER DETECTION (Better Regex) ---
-    // Match variations: art 45, art. 45, articulo 45, artículos 45 al 50
+    // --- STEP 1: ARTICLE NUMBER DETECTION ---
     const articleRefs: number[] = []
+    let detectedCodeName: string | null = null
 
-    // Regular expression for single articles or ranges
+    // 1a. Detect in current message
     const artRegex = /(?:art[íi]culo|art[íi]culos|artícu|art[s\.]?)\.?\s*(\d+)(?:\s*(?:a|al|y|hasta\s*el)\s*(\d+))?/gi
     let match
     while ((match = artRegex.exec(message)) !== null) {
@@ -222,37 +222,57 @@ export async function POST(request: NextRequest) {
       articleRefs.push(start)
       if (match[2]) {
         const end = parseInt(match[2])
-        // Limit range to 10 articles to avoid context overflow
         for (let i = start + 1; i <= Math.min(end, start + 10); i++) {
           articleRefs.push(i)
         }
       }
     }
 
+    // 1b. If no article in current message, check history for follow-ups (e.g. "eso no dice", "explícame")
+    if (articleRefs.length === 0 && messages.length > 0) {
+      // Look back through the last 3 messages to find a cited article
+      for (let i = messages.length - 1; i >= Math.max(0, messages.length - 3); i--) {
+        const msg = messages[i]
+        const historyMatch = msg.content.match(/art[íi]culo\s+(\d+)/i)
+        if (historyMatch) {
+          console.log(`🔄 Seguimiento detectado: Art ${historyMatch[1]}`)
+          articleRefs.push(parseInt(historyMatch[1]))
+
+          // Try to guess the code from history context
+          if (/procesal\s*penal/i.test(msg.content)) detectedCodeName = 'codigo-procesal-penal'
+          else if (/penal/i.test(msg.content)) detectedCodeName = 'codigo-penal'
+          else if (/civil/i.test(msg.content)) detectedCodeName = 'codigo-civil'
+          else if (/comercio/i.test(msg.content)) detectedCodeName = 'codigo-comercio'
+          else if (/trabajo/i.test(msg.content)) detectedCodeName = 'codigo-trabajo'
+
+          break // Found it
+        }
+      }
+    }
+
     if (articleRefs.length > 0) {
-      // Detect if user mentions a specific code
-      let targetCodeName: string | null = null
+      // Detect code in current message (overrides history)
       if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) {
-        targetCodeName = 'codigo-procesal-penal'
+        detectedCodeName = 'codigo-procesal-penal'
       } else if (/(penal|c[oó]digo\s*penal|cp\b)/i.test(lowerQuery)) {
-        targetCodeName = 'codigo-penal'
+        detectedCodeName = 'codigo-penal'
       } else if (/(civil|c[oó]digo\s*civil|cc\b)/i.test(lowerQuery)) {
-        targetCodeName = 'codigo-civil'
+        detectedCodeName = 'codigo-civil'
       } else if (/(comercio|comercial)/i.test(lowerQuery)) {
-        targetCodeName = 'codigo-comercio'
+        detectedCodeName = 'codigo-comercio'
       } else if (/(trabajo|laboral|patrono|empleado)/i.test(lowerQuery)) {
-        targetCodeName = 'codigo-trabajo'
+        detectedCodeName = 'codigo-trabajo'
       }
 
-      console.log(`🔍 Buscando artículos: ${articleRefs.join(', ')} (Target: ${targetCodeName || 'Todos'})`)
+      console.log(`🔍 Buscando artículos: ${articleRefs.join(', ')} (Código: ${detectedCodeName || 'Todos'})`)
 
       for (const num of articleRefs) {
         const numStr = String(num)
-        if (targetCodeName) {
-          const article = searchLegalArticle(targetCodeName, numStr)
+        if (detectedCodeName) {
+          const article = searchLegalArticle(detectedCodeName, numStr)
           if (article) {
             foundRelevantLaw = true
-            additionalContext += `\n\n${formatArticleForChat(article, targetCodeName)}\n`
+            additionalContext += `\n\n${formatArticleForChat(article, detectedCodeName)}\n`
           }
         } else {
           for (const codeName of ALL_CODES) {
@@ -338,41 +358,52 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 3. Add instructions based on whether we found legal context
+    // 3. Detect if this is an ANALYSIS or VERIFICATION request
+    const isAnalysisRequest = /(analiza|verifica|corrige|chequea|revisa|error|redacta|recurso)/i.test(lowerQuery) || message.length > 200
+
+    // 4. Build instructions based on context and intent
     if (foundRelevantLaw) {
       additionalContext = `═══════════════════════════════════════════════════════════════
-📚 CONTEXTO LEGAL DE COSTA RICA
+📚 CONTEXTO LEGAL DE COSTA RICA (GROUND TRUTH)
 ═══════════════════════════════════════════════════════════════
 
-⚖️ INSTRUCCIONES CRÍTICAS:
-1. Los artículos mostrados abajo son TEXTO EXACTO de los códigos oficiales
-2. DEBES citarlos TEXTUALMENTE usando el formato de cita (>)
-3. NO parafrasees ni inventes contenido
-4. Después de citar, puedes interpretar y analizar
-5. Si el artículo no responde completamente, indica qué falta
+⚖️ INSTRUCCIONES PARA LEXAI:
+1. Los artículos mostrados abajo son EL TEXTO OFICIAL.
+2. Si el usuario proporcionó un texto, COMPÁRALO con estos artículos.
+3. Detecta contradicciones o errores en la cita del usuario.
+4. Clasifica el resultado usando estas etiquetas:
+   - [ERROR NORMATIVO]: Si cita el artículo o ley que no es.
+   - [ERROR INTERPRETATIVO]: Si el contenido no coincide con la ley.
+   - [ERROR DE FUNDAMENTACIÓN]: Si aplica mal la norma al caso.
+   - [CORRECTO]: Si la información es precisa.
 
 ${additionalContext}
 
 ═══════════════════════════════════════════════════════════════`
     } else {
-      additionalContext = `\n\n⚠️ ADVERTENCIA: No se encontraron artículos específicos en los códigos disponibles.
-
-📋 INSTRUCCIONES:
-- Responde basándote en principios generales del derecho costarricense
-- NO inventes números de artículos
-- Indica claramente que no tienes el texto exacto
-- Recomienda verificar en SCIJ: http://www.pgrweb.go.cr/scij/
-- Sugiere consultar con un abogado colegiado`
+      additionalContext = `\n\n⚠️ ADVERTENCIA: No se encontraron artículos específicos en los códigos oficiales.
+📋 INSTRUCCIONES: Responde basándote en principios generales, advirtiendo la falta de texto exacto.`
     }
 
-    // 3. Build the response with grounded context
-    const groundedUserMessage = foundRelevantLaw
-      ? `📚 **CONTEXTO LEGAL ENCONTRADO (Priorizar esta información para responder):**\n${additionalContext}\n\n---\n\n**CONSULTA DEL USUARIO:**\n${message}\n\n**INSTRUCCIONES CLAVE**:
-1. Usa los artículos del contexto arriba para fundamentar tu respuesta.
-2. Cítalos TEXTUALMENTE (USA BLOQUES DE CITA >).
-3. Analiza detalladamente según lo que dice la ley proporcionada.
-4. Si los artículos no responden todo, dilo claramente.`
-      : message
+    // 5. Build the final grounded message
+    let groundedUserMessage = message
+    if (foundRelevantLaw) {
+      groundedUserMessage = `📚 **CONTEXTO LEGAL PARA TU ANÁLISIS:**\n${additionalContext}\n\n`
+
+      if (isAnalysisRequest) {
+        groundedUserMessage += `🔍 **SOLICITUD DE ANÁLISIS TÉCNICO:**\nEl usuario solicita revisar/redactar un texto jurídico. 
+Por favor, utiliza la estructura de "Análisis de LexAI" con:
+1. Estado de la Norma y Clasificación de Error ([ERROR...]).
+2. Nivel de Riesgo Procesal [BAJO/MEDIO/ALTO].
+3. Cita textual del artículo real.
+4. Versión mejorada (Modo Litigio) si aplica.
+5. Ejemplo procesal costarricense.\n\n---\n\n`
+      }
+
+      groundedUserMessage += `**CONSULTA DEL USUARIO:**\n${message}`
+    } else {
+      groundedUserMessage = `⚠️ **NO SE ENCONTRARON ARTÍCULOS ESPECÍFICOS.**\n${additionalContext}\n\n---\n\n**CONSULTA DEL USUARIO:**\n${message}`
+    }
 
     // Construir el historial de mensajes para OpenAI
     const chatMessages = [

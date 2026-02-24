@@ -35,11 +35,12 @@ CÓDIGOS DISPONIBLES ACTUALMENTE:
 - Código Civil de Costa Rica (Ley N° 63)
 - Código de Comercio de Costa Rica (Ley N° 3284)
 - Código de Trabajo de Costa Rica (Ley N° 2)
+- Código Penal de Costa Rica (Ley N° 4573)
+- Código Procesal Penal de Costa Rica (Ley N° 7594)
 
 CÓDIGOS NO DISPONIBLES (recomendar SCIJ):
-- Código Penal
 - Código de Familia
-- Otros códigos
+- Otros códigos especiales
 
 PROHIBICIONES ABSOLUTAS:
 ❌ NUNCA inventes números de artículos que no existen

@@ -27,7 +27,7 @@ import { join } from 'path'
 /**
  * Legal code identifiers
  */
-export type LegalCode = 'codigo-civil' | 'codigo-comercio' | 'codigo-trabajo'
+export type LegalCode = 'codigo-civil' | 'codigo-comercio' | 'codigo-trabajo' | 'codigo-penal' | 'codigo-procesal-penal'
 
 /**
  * Article structure from JSON
@@ -78,22 +78,22 @@ function loadLegalCode(code: LegalCode): LegalCodeJSON | null {
   if (legalCodeCache.has(code)) {
     return legalCodeCache.get(code)!
   }
-  
+
   // Load from disk
   const filePath = join(process.cwd(), 'data', 'processed', `${code}.json`)
-  
+
   if (!existsSync(filePath)) {
     console.warn(`⚠️  Legal code not found: ${code}`)
     return null
   }
-  
+
   try {
     const fileContent = readFileSync(filePath, 'utf-8')
     const legalCode: LegalCodeJSON = JSON.parse(fileContent)
-    
+
     // Cache for future use
     legalCodeCache.set(code, legalCode)
-    
+
     return legalCode
   } catch (error) {
     console.error(`❌ Error loading legal code ${code}:`, error)
@@ -113,15 +113,15 @@ function loadLegalCode(code: LegalCode): LegalCodeJSON | null {
  */
 function findExactArticle(law: LegalCode, articleNumber: number): LegalArticle | null {
   const legalCode = loadLegalCode(law)
-  
+
   if (!legalCode) {
     return null
   }
-  
+
   // O(n) search - could be optimized with Map if needed
   // For now, simplicity and correctness over micro-optimization
   const article = legalCode.articles.find(a => a.article === articleNumber)
-  
+
   return article || null
 }
 
@@ -145,7 +145,7 @@ function findSemanticArticles(law: LegalCode, query: string): LegalArticle[] {
   // 2. Search vector database
   // 3. Return top N results
   // 4. Filter by relevance threshold
-  
+
   console.log(`ℹ️  Semantic search not yet implemented for: "${query}"`)
   return []
 }
@@ -168,7 +168,7 @@ export function findLegalArticle(
 ): SearchResult {
   // STEP 1: Try exact match (PRIMARY)
   const exactArticle = findExactArticle(law, articleNumber)
-  
+
   if (exactArticle) {
     return {
       found: true,
@@ -177,11 +177,11 @@ export function findLegalArticle(
       message: `Found exact match: Article ${articleNumber}`,
     }
   }
-  
+
   // STEP 2: Semantic search (FUTURE - not implemented)
   // This would only be used if exact match fails
   // For now, skip to NOT FOUND
-  
+
   // STEP 3: Explicit NOT FOUND
   return {
     found: false,
@@ -244,11 +244,11 @@ export function getLegalCodeInfo(law: LegalCode): {
   extracted_at: string
 } | null {
   const legalCode = loadLegalCode(law)
-  
+
   if (!legalCode) {
     return null
   }
-  
+
   return {
     name: legalCode.name,
     law_number: legalCode.law_number,
@@ -283,11 +283,11 @@ export function articleExists(law: LegalCode, articleNumber: number): boolean {
  */
 export function findArticleInAnyCod(
   articleNumber: number,
-  codes: LegalCode[] = ['codigo-civil', 'codigo-comercio', 'codigo-trabajo']
+  codes: LegalCode[] = ['codigo-civil', 'codigo-comercio', 'codigo-trabajo', 'codigo-penal', 'codigo-procesal-penal']
 ): SearchResult & { law?: LegalCode } {
   for (const code of codes) {
     const result = findLegalArticle(code, articleNumber)
-    
+
     if (result.found) {
       return {
         ...result,
@@ -296,7 +296,7 @@ export function findArticleInAnyCod(
       }
     }
   }
-  
+
   return {
     found: false,
     searchMethod: 'not_found',

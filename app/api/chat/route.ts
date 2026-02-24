@@ -252,10 +252,17 @@ export async function POST(request: NextRequest) {
         })
 
         // Search in Código Procesal Penal
-        const penalResults = await searchLegalByKeyword('codigo-procesal-penal', keyword, 2)
-        penalResults.forEach((article: { number: string; content: string }) => {
+        const procesalPenalResults = await searchLegalByKeyword('codigo-procesal-penal', keyword, 2)
+        procesalPenalResults.forEach((article: { number: string; content: string }) => {
           foundRelevantLaw = true
           additionalContext += `\n\n${formatArticleForChat(article, 'codigo-procesal-penal')}\n`
+        })
+
+        // Search in Código Penal
+        const penalResults = await searchLegalByKeyword('codigo-penal', keyword, 2)
+        penalResults.forEach((article: { number: string; content: string }) => {
+          foundRelevantLaw = true
+          additionalContext += `\n\n${formatArticleForChat(article, 'codigo-penal')}\n`
         })
 
         if (foundRelevantLaw) break // Stop after first keyword with results

@@ -14,10 +14,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { openai, LEGAL_SYSTEM_PROMPT } from '@/lib/openai'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-// TODO: Uncomment when implementing token system
-// import { getServerSession } from 'next-auth'
-// import { authOptions } from '@/lib/auth'
-// import { checkTokenLimit, deductTokens, getUserTokens } from '@/lib/token-manager'
+import { prisma } from '@/lib/prisma'
+import { LegalMatter } from '@prisma/client'
 
 // ============================================================
 // JSON-BASED KNOWLEDGE BASE (no database dependency)
@@ -398,8 +396,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 3. Detect if this is an ANALYSIS or VERIFICATION request
+    // 3. Detect specialized intents (Analysis, Verification, Review)
     const isAnalysisRequest = /(analiza|verifica|corrige|chequea|revisa|error|redacta|recurso)/i.test(lowerQuery) || message.length > 200
+    const isReviewMode = /(riesgo procesal|revisar escrito|auditoría|legitimación|prescripción)/i.test(lowerQuery)
 
     // 4. Build instructions based on context and intent
     if (foundRelevantLaw) {
@@ -428,13 +427,20 @@ ${additionalContext}
     // 5. Build the final grounded message
     let groundedUserMessage = message
     if (foundRelevantLaw) {
-      // Add contextual alert if ambiguity was detected
       const alertSnippet = contextualAlert ? `\n\nℹ️ **ALERTA CONTEXTUAL (MODO SEGURO):**\n${contextualAlert}\n\n` : ''
       const riskSnippet = confusionRisk !== 'bajo' ? `\n\n⚠️ **INDICADOR DE RIESGO:** Se ha detectado un cambio entre cuerpos normativos relacionados (${confusionRisk.toUpperCase()}). Por favor, valide la fundamentación.\n\n` : ''
 
       groundedUserMessage = `📚 **CONTEXTO LEGAL PARA TU ANÁLISIS:**\n${alertSnippet}${riskSnippet}${additionalContext}\n\n`
 
-      if (isAnalysisRequest) {
+      if (isReviewMode) {
+        groundedUserMessage += `🛡️ **MODO REVISIÓN CRÍTICA (PREMIUM):**
+El usuario solicita una auditoría de este escrito. DEBES actuar como un auditor legal implacable:
+1. Revisa **Contradicciones internas** en los hechos narrados.
+2. Verifica la **Legitimación** (¿es el sujeto el titular del derecho?).
+3. Analiza plazos de **Prescripción o Caducidad** según el Código correspondiente.
+4. Detecta **Incongruencia omisiva** o falta de fundamentación.
+5. Presenta un informe de fallos críticos detectados antes de que se presente al juzgado.\n\n---\n\n`
+      } else if (isAnalysisRequest) {
         groundedUserMessage += `🔍 **SOLICITUD DE ANÁLISIS TÉCNICO:**\nEl usuario solicita revisar/redactar un texto jurídico. 
 Por favor, utiliza la estructura de "Análisis de LexAI" con:
 1. Estado de la Norma y Clasificación de Error ([ERROR...]).
@@ -444,9 +450,8 @@ Por favor, utiliza la estructura de "Análisis de LexAI" con:
 5. Ejemplo procesal costarricense.\n\n---\n\n`
       }
 
-      // Special instruction for Litigant Mode ambiguity
       if (contextualAlert && additionalContext.split('Artí').length > 2) {
-        groundedUserMessage += `💡 **MODO LITIGANTE ACTIVO**: Se han proporcionado múltiples opciones legales debido a la ambigüedad detectada. Analiza y presenta AMBAS opciones con elegancia para que el usuario elija la que mejor se adapte a su necesidad procesal.\n\n`
+        groundedUserMessage += `💡 **MODO LITIGANTE ACTIVO**: Se han proporcionado múltiples opciones legales debido a la ambigüedad detectada. Analiza y presenta AMBAS opciones con elegancia.\n\n`
       }
 
       groundedUserMessage += `**CONSULTA DEL USUARIO:**\n${message}`
@@ -498,19 +503,93 @@ Por favor, utiliza la estructura de "Análisis de LexAI" con:
     let responseMessage = completion.choices[0].message.content || ''
     const tokensUsed = completion.usage?.total_tokens || 0
 
-    // Agregar nota de verificación al final si no está ya incluida
-    const verificationNote = '\n\n---\n⚠️ **Nota:** Verifica esta información en http://www.pgrweb.go.cr/scij/ o consulta con un abogado colegiado.'
-    if (!responseMessage.includes('⚠️')) {
-      responseMessage += verificationNote
+    // --- STEP 6: METADATA PARSING & DATABASE SAVING ---
+    const matterMatch = responseMessage.match(/Materia\*\*:\s*\[?([A-ZÁÉÍÓÚÑ]+)\]?/i)
+    const typeMatch = responseMessage.match(/Tipo\*\*:\s*\[?([A-ZÁÉÍÓÚÑ\s]+)\]?/i)
+    const riskMatch = responseMessage.match(/Riesgo Procesal\*\*:?\s*\[?([A-Z]+)\]?/i)
+
+    const rawMatter = matterMatch ? matterMatch[1].trim().toUpperCase() : 'OTHER'
+    // Map raw content to LegalMatter enum
+    const matterMap: Record<string, LegalMatter> = {
+      'PENAL': LegalMatter.PENAL,
+      'CIVIL': LegalMatter.CIVIL,
+      'LABORAL': LegalMatter.LABORAL,
+      'FAMILIA': LegalMatter.FAMILIA,
+      'COMERCIAL': LegalMatter.COMERCIAL,
+      'COMERCIO': LegalMatter.COMERCIAL,
+      'ADMINISTRATIVO': LegalMatter.ADMINISTRATIVO,
+      'CONSTITUCIONAL': LegalMatter.CONSTITUCIONAL,
+      'TRANSITO': LegalMatter.TRANSITO,
+      'OTHER': LegalMatter.OTHER
+    }
+    const detectedMatter = matterMap[rawMatter] || LegalMatter.OTHER
+    const detectedType = typeMatch ? typeMatch[1].trim() : 'Consulta'
+    const detectedRiskFormatted = riskMatch ? riskMatch[1].trim().toLowerCase() : confusionRisk !== 'bajo' ? confusionRisk : 'bajo'
+
+    // Clean up response for the user (remove SaaS classification block)
+    const cleanResponseMessage = responseMessage
+      .replace(/### 📊 Clasificación SaaS[\s\S]*?(?=---|$)/i, '')
+      .trim()
+
+    // Database Persistence
+    try {
+      // For now we assume a guest user if no session, but we still want to log the interaction
+      // In a real SaaS, we would use the authenticated user ID
+      const tempUserId = 'guest-litigante' // Fallback for beta
+
+      // Ensure user exists (only for beta/demo purposes)
+      const user = await prisma.user.upsert({
+        where: { email: 'beta-litigante@lexai.cr' },
+        update: {},
+        create: {
+          email: 'beta-litigante@lexai.cr',
+          name: 'Beta Tester',
+          role: 'LAWYER'
+        }
+      })
+
+      const targetConversationId = conversationId || (await prisma.conversation.create({
+        data: {
+          userId: user.id,
+          title: message.substring(0, 50) + '...',
+          matter: detectedMatter
+        }
+      })).id
+
+      // Save Message and its Metadata
+      const savedMessage = await prisma.message.create({
+        data: {
+          conversationId: targetConversationId,
+          role: 'ASSISTANT',
+          content: cleanResponseMessage,
+          tokensUsed,
+          metadata: {
+            create: {
+              matter: detectedMatter,
+              writingType: detectedType,
+              riskLevel: detectedRiskFormatted,
+              isLitigantMode: /(recurso|apelaci[oó]n|excepci[oó]n|escrito|demanda|querella)/i.test(lowerQuery),
+              ambiguityDetected: !!contextualAlert,
+              detectedArticles: articleRefs.map(String)
+            }
+          }
+        }
+      })
+
+      console.log(`✅ Consulta guardada con éxito: ${savedMessage.id} (Materia: ${detectedMatter})`)
+    } catch (dbError) {
+      console.error('❌ Error guardando consulta en DB:', dbError)
     }
 
-    // TODO: Guardar en base de datos cuando esté configurado
-    // Por ahora solo retornamos la respuesta
-
     return NextResponse.json({
-      message: responseMessage,
+      message: cleanResponseMessage,
       tokensUsed,
-      conversationId,
+      conversationId: conversationId || 'new-beta-conv',
+      metadata: {
+        matter: detectedMatter,
+        type: detectedType,
+        risk: detectedRiskFormatted
+      }
     })
   } catch (error: any) {
     console.error('Error en chat API:', error)

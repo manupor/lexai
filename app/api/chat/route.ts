@@ -378,13 +378,33 @@ ${additionalContext}
     const chatMessages = [
       { role: 'system' as const, content: LEGAL_SYSTEM_PROMPT },
       ...messages.map((msg: any) => ({
-        role: msg.role,
+        role: String(msg.role).toLowerCase() as 'user' | 'assistant' | 'system',
         content: msg.content,
       })).slice(-10), // Limit focus to recent history
       { role: 'user' as const, content: groundedUserMessage },
     ]
 
-    console.log(`💬 Enviando a OpenAI (${chatMessages.length} mensajes, context: ${foundRelevantLaw ? 'SI' : 'NO'})`)
+    // DEBUG LOG
+    const debugInfo = {
+      timestamp: new Date().toISOString(),
+      query: message,
+      articleRefs,
+      foundRelevantLaw,
+      contextLength: additionalContext.length,
+      numMessagesSent: chatMessages.length
+    }
+    console.log(`💬 Enviando a OpenAI:`, debugInfo)
+
+    try {
+      const logDir = join(process.cwd(), 'logs')
+      const logFile = join(logDir, 'chat-debug.log')
+      // Ensure directory exists
+      const { existsSync, mkdirSync, appendFileSync } = require('fs')
+      if (!existsSync(logDir)) mkdirSync(logDir)
+      appendFileSync(logFile, JSON.stringify(debugInfo) + '\n')
+    } catch (e) {
+      console.error('Error writing debug log:', e)
+    }
 
     // Llamar a OpenAI con configuración optimizada para máxima precisión
     const completion = await openai.chat.completions.create({

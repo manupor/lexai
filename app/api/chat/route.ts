@@ -215,6 +215,7 @@ export async function POST(request: NextRequest) {
     let detectedCodeName: string | null = null
     let historyCodeName: string | null = null
     let contextualAlert = ''
+    let confusionRisk: 'bajo' | 'medio' | 'alto' = 'bajo'
 
     // 1a. Detect in current message
     const artRegex = /(?:art[íi]culo|art[íi]culos|artícu|art[s\.]?)\.?\s*(\d+)(?:\s*(?:a|al|y|hasta\s*el)\s*(\d+))?/gi
@@ -230,7 +231,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1b. Check history for code context (to prevent mixing Penal vs Procesal Penal)
+    // 1b. Check history for code context
     if (messages.length > 0) {
       for (let i = messages.length - 1; i >= Math.max(0, messages.length - 5); i--) {
         const hMsg = messages[i].content.toLowerCase()
@@ -242,7 +243,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1c. If no article in current message, check history for follow-ups
+    // 1c. Follow-up detection
     if (articleRefs.length === 0 && messages.length > 0) {
       for (let i = messages.length - 1; i >= Math.max(0, messages.length - 3); i--) {
         const historyMatch = messages[i].content.match(/art[íi]culo\s+(\d+)/i)
@@ -255,44 +256,71 @@ export async function POST(request: NextRequest) {
     }
 
     if (articleRefs.length > 0) {
-      // Detect code in CURRENT message (overrides history)
+      // Detect code in CURRENT message
       let currentMsgCode: string | null = null
-      if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) {
-        currentMsgCode = 'codigo-procesal-penal'
-      } else if (/(penal|c[oó]digo\s*penal|cp\b)/i.test(lowerQuery)) {
-        currentMsgCode = 'codigo-penal'
-      } else if (/(civil|c[oó]digo\s*civil|cc\b)/i.test(lowerQuery)) {
-        currentMsgCode = 'codigo-civil'
-      } else if (/(comercio|comercial)/i.test(lowerQuery)) {
-        currentMsgCode = 'codigo-comercio'
-      } else if (/(trabajo|laboral|patrono|empleado)/i.test(lowerQuery)) {
-        currentMsgCode = 'codigo-trabajo'
-      }
+      if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) currentMsgCode = 'codigo-procesal-penal'
+      else if (/(penal|c[oó]digo\s*penal|cp\b)/i.test(lowerQuery)) currentMsgCode = 'codigo-penal'
+      else if (/(civil|c[oó]digo\s*civil|cc\b)/i.test(lowerQuery)) currentMsgCode = 'codigo-civil'
+      else if (/(comercio|comercial)/i.test(lowerQuery)) currentMsgCode = 'codigo-comercio'
+      else if (/(trabajo|laboral|patrono|empleado)/i.test(lowerQuery)) currentMsgCode = 'codigo-trabajo'
 
-      // Safe Mode Ambiguity Logic
+      // Detect "Mode Litigante" (Drafting resources/exceptions)
+      const isLitigantMode = /(recurso|apelaci[oó]n|excepci[oó]n|escrito|demanda|querella|formal)/i.test(lowerQuery)
+
+      // Risk & Ambiguity Logic
       if (articleRefs.length > 0 && !currentMsgCode && historyCodeName) {
-        contextualAlert = `⚠️ ALERTA CONTEXTUAL: En mensajes anteriores se hacía referencia al ${historyCodeName.replace('codigo-', '').replace('-', ' ').toUpperCase()}. Confirma si deseas el artículo de ese código o de uno distinto.`
+        // [SAAS SAFE MODE]
+        contextualAlert = `ℹ️ **Confirmación Contextual**: LexAI ha detectado que anteriormente se discutía sobre el **${historyCodeName.replace('codigo-', '').replace('-', ' ').toUpperCase()}**. Para mayor seguridad, confirme si desea continuar con este código o consultar otro.`
+
+        // Internal Ambiguity Logging
+        try {
+          const { appendFileSync } = require('fs');
+          const logData = { timestamp: new Date().toISOString(), type: 'history_fallback', prevCode: historyCodeName, query: message };
+          appendFileSync('logs/ambiguity.log', JSON.stringify(logData) + '\n');
+        } catch (e) { }
+
         detectedCodeName = historyCodeName
       } else if (currentMsgCode) {
+        // Detected a code change - Flag Risk
+        if (historyCodeName && historyCodeName !== currentMsgCode) {
+          const isHighRiskPair = (historyCodeName.includes('penal') && currentMsgCode.includes('penal')) ||
+            (historyCodeName.includes('civil') && currentMsgCode.includes('procesal'));
+          confusionRisk = isHighRiskPair ? 'medio' : 'bajo';
+        }
         detectedCodeName = currentMsgCode
       }
 
-      console.log(`🔍 Buscando artículos: ${articleRefs.join(', ')} (Código: ${detectedCodeName || 'Todos'})`)
+      console.log(`🔍 Buscando artículos: ${articleRefs.join(', ')} (Código: ${detectedCodeName || 'Todos'}, Riesgo: ${confusionRisk})`)
 
-      for (const num of articleRefs) {
-        const numStr = String(num)
-        if (detectedCodeName) {
-          const article = searchLegalArticle(detectedCodeName, numStr)
-          if (article) {
-            foundRelevantLaw = true
-            additionalContext += `\n\n${formatArticleForChat(article, detectedCodeName)}\n`
-          }
-        } else {
+      // Litigant Mode override: If ambiguous but drafting, provide BOTH to be elegant
+      if (isLitigantMode && !currentMsgCode && articleRefs.length > 0) {
+        for (const num of articleRefs) {
+          const numStr = String(num);
           for (const codeName of ALL_CODES) {
             const article = searchLegalArticle(codeName, numStr)
             if (article) {
               foundRelevantLaw = true
               additionalContext += `\n\n${formatArticleForChat(article, codeName)}\n`
+            }
+          }
+        }
+      } else {
+        // Standard retrieval
+        for (const num of articleRefs) {
+          const numStr = String(num)
+          if (detectedCodeName) {
+            const article = searchLegalArticle(detectedCodeName, numStr)
+            if (article) {
+              foundRelevantLaw = true
+              additionalContext += `\n\n${formatArticleForChat(article, detectedCodeName)}\n`
+            }
+          } else {
+            for (const codeName of ALL_CODES) {
+              const article = searchLegalArticle(codeName, numStr)
+              if (article) {
+                foundRelevantLaw = true
+                additionalContext += `\n\n${formatArticleForChat(article, codeName)}\n`
+              }
             }
           }
         }
@@ -401,9 +429,10 @@ ${additionalContext}
     let groundedUserMessage = message
     if (foundRelevantLaw) {
       // Add contextual alert if ambiguity was detected
-      const alertSnippet = contextualAlert ? `\n\n🚨 **ALERTA DE SEGURIDAD (MODO SEGURO):**\n${contextualAlert}\n\n` : ''
+      const alertSnippet = contextualAlert ? `\n\nℹ️ **ALERTA CONTEXTUAL (MODO SEGURO):**\n${contextualAlert}\n\n` : ''
+      const riskSnippet = confusionRisk !== 'bajo' ? `\n\n⚠️ **INDICADOR DE RIESGO:** Se ha detectado un cambio entre cuerpos normativos relacionados (${confusionRisk.toUpperCase()}). Por favor, valide la fundamentación.\n\n` : ''
 
-      groundedUserMessage = `📚 **CONTEXTO LEGAL PARA TU ANÁLISIS:**\n${alertSnippet}${additionalContext}\n\n`
+      groundedUserMessage = `📚 **CONTEXTO LEGAL PARA TU ANÁLISIS:**\n${alertSnippet}${riskSnippet}${additionalContext}\n\n`
 
       if (isAnalysisRequest) {
         groundedUserMessage += `🔍 **SOLICITUD DE ANÁLISIS TÉCNICO:**\nEl usuario solicita revisar/redactar un texto jurídico. 
@@ -413,6 +442,11 @@ Por favor, utiliza la estructura de "Análisis de LexAI" con:
 3. Cita textual del artículo real.
 4. Versión mejorada (Modo Litigio) si aplica.
 5. Ejemplo procesal costarricense.\n\n---\n\n`
+      }
+
+      // Special instruction for Litigant Mode ambiguity
+      if (contextualAlert && additionalContext.split('Artí').length > 2) {
+        groundedUserMessage += `💡 **MODO LITIGANTE ACTIVO**: Se han proporcionado múltiples opciones legales debido a la ambigüedad detectada. Analiza y presenta AMBAS opciones con elegancia para que el usuario elija la que mejor se adapte a su necesidad procesal.\n\n`
       }
 
       groundedUserMessage += `**CONSULTA DEL USUARIO:**\n${message}`

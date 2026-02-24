@@ -135,7 +135,17 @@ function searchLegalArticle(codeName: string, articleNumber: string): Normalized
 }
 
 /**
- * Search articles by keyword (case-insensitive substring match).
+ * Normalize text for searching: lowercase and remove accents
+ */
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+/**
+ * Search articles by keyword (accent-insensitive, case-insensitive).
  */
 function searchLegalByKeyword(codeName: string, keyword: string, maxResults: number = 2): NormalizedArticle[] {
   if (!ALL_CODES.includes(codeName)) return []
@@ -143,11 +153,12 @@ function searchLegalByKeyword(codeName: string, keyword: string, maxResults: num
   ensureAllCodesLoaded()
 
   const articles = codeCache[codeName] || []
-  const keywordLower = keyword.toLowerCase()
+  const keywordNorm = normalizeText(keyword)
   const results: NormalizedArticle[] = []
 
   for (const art of articles) {
-    if (art.content.toLowerCase().includes(keywordLower)) {
+    const contentNorm = normalizeText(art.content)
+    if (contentNorm.includes(keywordNorm)) {
       results.push(art)
       if (results.length >= maxResults) break
     }
@@ -163,7 +174,7 @@ function formatArticleForChat(article: { number: string; content: string }, code
   return `**${codeTitle}**
 
 **Artículo ${article.number}:**
-> ${article.content}
+> ${article.content.trim()}
 
 ---`
 }
@@ -199,13 +210,26 @@ export async function POST(request: NextRequest) {
     let foundRelevantLaw = false
     const lowerQuery = message.toLowerCase()
 
-    // 1. Detect if user asks for specific article number
-    // Match variations: artículo, articulo, art., etc.
-    const articleMatch = message.match(/art[íi]cul?[oi]?\s+(\d+)/i)
+    // --- STEP 1: ARTICLE NUMBER DETECTION (Better Regex) ---
+    // Match variations: art 45, art. 45, articulo 45, artículos 45 al 50
+    const articleRefs: number[] = []
 
-    if (articleMatch) {
-      const articleNumber = articleMatch[1]
+    // Regular expression for single articles or ranges
+    const artRegex = /(?:art[íi]culo|art[íi]culos|artícu|art[s\.]?)\.?\s*(\d+)(?:\s*(?:a|al|y|hasta\s*el)\s*(\d+))?/gi
+    let match
+    while ((match = artRegex.exec(message)) !== null) {
+      const start = parseInt(match[1])
+      articleRefs.push(start)
+      if (match[2]) {
+        const end = parseInt(match[2])
+        // Limit range to 10 articles to avoid context overflow
+        for (let i = start + 1; i <= Math.min(end, start + 10); i++) {
+          articleRefs.push(i)
+        }
+      }
+    }
 
+    if (articleRefs.length > 0) {
       // Detect if user mentions a specific code
       let targetCodeName: string | null = null
       if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) {
@@ -216,52 +240,101 @@ export async function POST(request: NextRequest) {
         targetCodeName = 'codigo-civil'
       } else if (/(comercio|comercial)/i.test(lowerQuery)) {
         targetCodeName = 'codigo-comercio'
-      } else if (/(trabajo|laboral)/i.test(lowerQuery)) {
+      } else if (/(trabajo|laboral|patrono|empleado)/i.test(lowerQuery)) {
         targetCodeName = 'codigo-trabajo'
       }
 
-      if (targetCodeName) {
-        // Search only the specified code
-        console.log(`🎯 Busca artículo ${articleNumber} en ${targetCodeName}`)
-        const article = searchLegalArticle(targetCodeName, articleNumber)
-        if (article) {
-          foundRelevantLaw = true
-          additionalContext += `\n\n${formatArticleForChat(article, targetCodeName)}\n`
-        }
-      } else {
-        // No specific code mentioned — search ALL 5 codes
-        console.log(`🔍 Busca artículo ${articleNumber} en todos los códigos`)
-        for (const codeName of ALL_CODES) {
-          const article = searchLegalArticle(codeName, articleNumber)
+      console.log(`🔍 Buscando artículos: ${articleRefs.join(', ')} (Target: ${targetCodeName || 'Todos'})`)
+
+      for (const num of articleRefs) {
+        const numStr = String(num)
+        if (targetCodeName) {
+          const article = searchLegalArticle(targetCodeName, numStr)
           if (article) {
             foundRelevantLaw = true
-            additionalContext += `\n\n${formatArticleForChat(article, codeName)}\n`
+            additionalContext += `\n\n${formatArticleForChat(article, targetCodeName)}\n`
+          }
+        } else {
+          for (const codeName of ALL_CODES) {
+            const article = searchLegalArticle(codeName, numStr)
+            if (article) {
+              foundRelevantLaw = true
+              additionalContext += `\n\n${formatArticleForChat(article, codeName)}\n`
+            }
           }
         }
       }
-
-      if (foundRelevantLaw) {
-        additionalContext = `🎯 ARTÍCULO ENCONTRADO - CITA TEXTUALMENTE:\n${additionalContext}`
-      }
     }
 
-    // 2. If no specific article, do keyword search across ALL codes
-    if (!foundRelevantLaw) {
-      const keywords = message.toLowerCase()
-        .replace(/[^a-záéíóúñü\s]/g, '')
-        .split(/\s+/)
-        .filter((w: string) => w.length > 4)
-        .slice(0, 3)
+    // --- STEP 2: TOPIC-BASED SEARCH (Ported from Python) ---
+    // Detect key legal topics to find relevant articles even without mention of article numbers
+    if (!foundRelevantLaw || articleRefs.length < 3) {
+      const topicPatterns: [RegExp, string][] = [
+        [/\bcontrat/i, 'contrato'],
+        [/\bdespi/i, 'despido'],
+        [/\bvacacion/i, 'vacaciones'],
+        [/\b(?:aguinaldo|décimo.?tercer)\b/i, 'aguinaldo'],
+        [/\b(?:salario|sueldo|remunerac)/i, 'salario'],
+        [/\b(?:matrimonio|casar)/i, 'matrimonio'],
+        [/\bdivorci/i, 'divorcio'],
+        [/\b(?:herencia|hered)/i, 'herencia'],
+        [/\b(?:propiedad|inmueble|terreno|finca)\b/i, 'propiedad'],
+        [/\b(?:arrendamiento|alquiler|inquilin)/i, 'arrendamiento'],
+        [/\b(?:sociedad|empresa|compañía)\b/i, 'sociedad'],
+        [/\b(?:prescripci|prescrib)/i, 'prescripción'],
+        [/\b(?:obligaci|deuda)/i, 'obligación'],
+        [/\b(?:delito|crimen|criminal)\b/i, 'delito'],
+        [/\b(?:homicidio|asesinat|matar)\b/i, 'homicidio'],
+        [/\b(?:robo|hurto|robar)\b/i, 'robo'],
+        [/\b(?:estafa|fraude|engaño)\b/i, 'estafa'],
+        [/\b(?:daños|perjuicios|indemnizaci)/i, 'daños'],
+        [/\b(?:embargo|embargar)\b/i, 'embargo'],
+        [/\b(?:alimento|pensión.?alimentaria|manutenci)/i, 'alimentos'],
+        [/\b(?:jornada|horas.?extra|horario)\b/i, 'jornada laboral'],
+        [/\bpreaviso\b/i, 'preaviso'],
+        [/\bcesant[ií]a\b/i, 'cesantía'],
+        [/\bhipoteca/i, 'hipoteca'],
+        [/\b(?:trabajador|patrono|empleador|emplead)/i, 'relación laboral'],
+        [/\bjusta.?causa\b/i, 'despido'],
+      ]
 
-      for (const keyword of keywords) {
-        for (const codeName of ALL_CODES) {
-          const results = searchLegalByKeyword(codeName, keyword, 2)
-          results.forEach((article) => {
-            foundRelevantLaw = true
-            additionalContext += `\n\n${formatArticleForChat(article, codeName)}\n`
-          })
+      const detectedTopics = new Set<string>()
+      for (const [pattern, topic] of topicPatterns) {
+        if (pattern.test(lowerQuery)) {
+          detectedTopics.add(topic)
         }
-        if (foundRelevantLaw) break // Stop after first keyword with results
+      }
+
+      const searchTerms = Array.from(detectedTopics)
+      if (searchTerms.length === 0) {
+        // Fallback to extraction of long words
+        const fallbackKeywords = lowerQuery
+          .replace(/[^a-záéíóúñü\s]/g, '')
+          .split(/\s+/)
+          .filter((w: string) => w.length > 5)
+          .slice(0, 2)
+        searchTerms.push(...fallbackKeywords)
+      }
+
+      console.log(`🔍 Temas buscados: ${searchTerms.join(', ')}`)
+
+      const maxNewArticles = 6
+      let count = 0
+      for (const term of searchTerms) {
+        if (count >= maxNewArticles) break
+        for (const codeName of ALL_CODES) {
+          const results = searchLegalByKeyword(codeName, term, 2)
+          for (const art of results) {
+            // Check if already added
+            if (!additionalContext.includes(art.content.substring(0, 50))) {
+              foundRelevantLaw = true
+              additionalContext += `\n\n${formatArticleForChat(art, codeName)}\n`
+              count++
+              if (count >= maxNewArticles) break
+            }
+          }
+          if (count >= maxNewArticles) break
+        }
       }
     }
 
@@ -292,31 +365,34 @@ ${additionalContext}
 - Sugiere consultar con un abogado colegiado`
     }
 
-    // Construir el prompt del sistema con contexto adicional si existe
-    let systemPrompt = LEGAL_SYSTEM_PROMPT
-    if (additionalContext) {
-      systemPrompt += additionalContext
-    }
+    // 3. Build the response with grounded context
+    const groundedUserMessage = foundRelevantLaw
+      ? `📚 **CONTEXTO LEGAL ENCONTRADO (Priorizar esta información para responder):**\n${additionalContext}\n\n---\n\n**CONSULTA DEL USUARIO:**\n${message}\n\n**INSTRUCCIONES CLAVE**:
+1. Usa los artículos del contexto arriba para fundamentar tu respuesta.
+2. Cítalos TEXTUALMENTE (USA BLOQUES DE CITA >).
+3. Analiza detalladamente según lo que dice la ley proporcionada.
+4. Si los artículos no responden todo, dilo claramente.`
+      : message
 
     // Construir el historial de mensajes para OpenAI
     const chatMessages = [
-      { role: 'system' as const, content: systemPrompt },
+      { role: 'system' as const, content: LEGAL_SYSTEM_PROMPT },
       ...messages.map((msg: any) => ({
         role: msg.role,
         content: msg.content,
-      })),
-      { role: 'user' as const, content: message },
+      })).slice(-10), // Limit focus to recent history
+      { role: 'user' as const, content: groundedUserMessage },
     ]
+
+    console.log(`💬 Enviando a OpenAI (${chatMessages.length} mensajes, context: ${foundRelevantLaw ? 'SI' : 'NO'})`)
 
     // Llamar a OpenAI con configuración optimizada para máxima precisión
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o', // Usar GPT-4o para mejores resultados (más preciso que mini)
       messages: chatMessages,
-      temperature: 0.1, // Temperatura muy baja para máxima precisión y consistencia
-      max_tokens: 3000, // Aumentar tokens para respuestas más completas
-      top_p: 0.95, // Más determinístico
-      frequency_penalty: 0.5, // Reducir más las repeticiones
-      presence_penalty: 0.1, // Menos diversidad, más precisión
+      temperature: 0.1, // Temperatura muy baja para máxima precisión (evita alucinaciones)
+      max_tokens: 2500,
+      top_p: 1.0,
     })
 
     let responseMessage = completion.choices[0].message.content || ''

@@ -14,10 +14,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { openai, LEGAL_SYSTEM_PROMPT } from '@/lib/openai'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync, mkdirSync, appendFileSync } from 'fs'
 import { join } from 'path'
 import { prisma } from '@/lib/prisma'
 import { LegalMatter } from '@prisma/client'
+import { Pool } from 'pg'
+
+// Initialize Connection Pool for Vector Search
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+})
 
 // ============================================================
 // JSON-BASED KNOWLEDGE BASE (no database dependency)
@@ -216,7 +223,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { message, conversationId, messages = [] } = body
+    const { message, conversationId, messages = [], materias = [] } = body
 
     if (!message) {
       return NextResponse.json(
@@ -424,11 +431,51 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 3. Detect specialized intents (Analysis, Verification, Review)
+    // --- STEP 3: HYBRID VECTOR SEARCH (pgvector / RAG) ---
+    // Queries all 8,000+ chunks across all documents (PDF, RTF, DOCX).
+    try {
+      console.log(`📡 Invocando búsqueda vectorial para RAG (materias: ${materias.join(', ') || 'Todas'})`)
+      const embeddingResponse = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: message,
+      });
+
+      if (embeddingResponse.data && embeddingResponse.data.length > 0) {
+        const embedding = embeddingResponse.data[0].embedding;
+        const embeddingStr = `[${embedding.join(',')}]`;
+
+        let vectorSql = `
+          SELECT fuente, materia, articulo, contenido, 1 - (embedding <=> $1::vector) AS score
+          FROM documents
+        `;
+        const vectorParams: any[] = [embeddingStr];
+
+        if (materias && materias.length > 0) {
+          vectorSql += ` WHERE materia = ANY($2::text[])`;
+          vectorParams.push(materias);
+        }
+
+        vectorSql += ` ORDER BY embedding <=> $1::vector LIMIT 5`;
+
+        const { rows } = await pool.query(vectorSql, vectorParams);
+
+        for (const row of rows) {
+          // Si el score es mayor a 0.5 y el contenido no está ya en el contexto
+          if (row.score > 0.45 && !additionalContext.includes(row.contenido.substring(0, 50))) {
+            foundRelevantLaw = true;
+            additionalContext += `\n\n**${row.fuente} (${row.materia.toUpperCase()})**\n\n**${row.articulo}:**\n> ${row.contenido.trim()}\n\n---`
+          }
+        }
+      }
+    } catch (vectorError) {
+      console.error('❌ Error en búsqueda vectorial/RAG:', vectorError);
+    }
+
+    // 4. Detect specialized intents (Analysis, Verification, Review)
     const isAnalysisRequest = /(analiza|verifica|corrige|chequea|revisa|error|redacta|recurso)/i.test(lowerQuery) || message.length > 200
     const isReviewMode = /(riesgo procesal|revisar escrito|auditoría|legitimación|prescripción)/i.test(lowerQuery)
 
-    // 4. Build instructions based on context and intent
+    // 5. Build instructions based on context and intent
     if (foundRelevantLaw) {
       additionalContext = `═══════════════════════════════════════════════════════════════
 📚 CONTEXTO LEGAL DE COSTA RICA (GROUND TRUTH)
@@ -452,7 +499,7 @@ ${additionalContext}
 📋 INSTRUCCIONES: Responde basándote en principios generales, advirtiendo la falta de texto exacto.`
     }
 
-    // 5. Build the final grounded message
+    // 6. Build the final grounded message
     let groundedUserMessage = message
     if (foundRelevantLaw) {
       const alertSnippet = contextualAlert ? `\n\nℹ️ **ALERTA CONTEXTUAL (MODO SEGURO):**\n${contextualAlert}\n\n` : ''

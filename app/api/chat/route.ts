@@ -293,14 +293,15 @@ export async function POST(request: NextRequest) {
       let currentMsgCode: string | null = null
       let dbLawFilter: string | null = null
 
-      if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) currentMsgCode = 'codigo-procesal-penal'
-      else if (/(penal|c[oó]digo\s*penal|cp\b)/i.test(lowerQuery)) currentMsgCode = 'codigo-penal'
-      else if (/(civil|c[oó]digo\s*civil|cc\b)/i.test(lowerQuery)) currentMsgCode = 'codigo-civil'
-      else if (/(comercio|comercial)/i.test(lowerQuery)) currentMsgCode = 'codigo-comercio'
-      else if (/(trabajo|laboral|patrono|empleado)/i.test(lowerQuery)) currentMsgCode = 'codigo-trabajo'
+      if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) { currentMsgCode = 'codigo-procesal-penal'; dbLawFilter = 'Procesal Penal'; }
+      else if (/(penal|c[oó]digo\s*penal|cp\b)/i.test(lowerQuery)) { currentMsgCode = 'codigo-penal'; dbLawFilter = 'Penal'; }
+      else if (/(civil|c[oó]digo\s*civil|cc\b)/i.test(lowerQuery)) { currentMsgCode = 'codigo-civil'; dbLawFilter = 'Civil'; }
+      else if (/(comercio|comercial)/i.test(lowerQuery)) { currentMsgCode = 'codigo-comercio'; dbLawFilter = 'Comercio'; }
+      else if (/(trabajo|laboral|patrono|empleado)/i.test(lowerQuery)) { currentMsgCode = 'codigo-trabajo'; dbLawFilter = 'Trabajo'; }
       else if (/(lgap|administraci[oó]n\s*p[uú]blica)/i.test(lowerQuery)) dbLawFilter = 'Administración Pública'
       else if (/(constituci[oó]n|carta\s*magna)/i.test(lowerQuery)) dbLawFilter = 'Constitución'
       else if (/(tr[aá]nsito)/i.test(lowerQuery)) dbLawFilter = 'Tránsito'
+      else if (/(rac\b|resoluci[oó]n\s*alterna)/i.test(lowerQuery)) dbLawFilter = 'RAC'
 
       // Detect "Mode Litigante" (Drafting resources/exceptions)
       const isLitigantMode = /(recurso|apelaci[oó]n|excepci[oó]n|escrito|demanda|querella|formal)/i.test(lowerQuery)
@@ -311,6 +312,12 @@ export async function POST(request: NextRequest) {
         contextualAlert = `ℹ️ **Confirmación Contextual**: LexAI ha detectado que anteriormente se discutía sobre el **${historyCodeName.replace('codigo-', '').replace('-', ' ').toUpperCase()}**. Para mayor seguridad, confirme si desea continuar con este código o consultar otro.`
 
         detectedCodeName = historyCodeName
+        if (historyCodeName === 'codigo-procesal-penal') dbLawFilter = 'Procesal Penal'
+        else if (historyCodeName === 'codigo-penal') dbLawFilter = 'Penal'
+        else if (historyCodeName === 'codigo-civil') dbLawFilter = 'Civil'
+        else if (historyCodeName === 'codigo-comercio') dbLawFilter = 'Comercio'
+        else if (historyCodeName === 'codigo-trabajo') dbLawFilter = 'Trabajo'
+
       } else if (currentMsgCode) {
         detectedCodeName = currentMsgCode
       }
@@ -321,45 +328,52 @@ export async function POST(request: NextRequest) {
       // OR if we have a dbLawFilter
       for (const num of articleRefs) {
         const numStr = String(num);
+        let foundLocally = false;
 
         // 1. Check local JSON codes
         if (detectedCodeName) {
           const article = searchLegalArticle(detectedCodeName, numStr)
           if (article) {
             foundRelevantLaw = true
+            foundLocally = true
             additionalContext += `\n\n${formatArticleForChat(article, detectedCodeName)}\n`
           }
-        } else if (!dbLawFilter) {
+        }
+
+        if (!foundLocally && !dbLawFilter) {
           for (const codeName of ALL_CODES) {
             const article = searchLegalArticle(codeName, numStr)
             if (article) {
               foundRelevantLaw = true
+              foundLocally = true
               additionalContext += `\n\n${formatArticleForChat(article, codeName)}\n`
             }
           }
         }
 
-        // 2. Check Database (PostgreSQL) for other laws (LGAP, Constitution, etc.)
-        try {
-          let dbQuery = `SELECT fuente, materia, articulo, contenido FROM documents WHERE (articulo ILIKE $1 OR articulo ILIKE $2)`
-          let dbParams = [`%Artículo ${numStr}.%`, `%Artículo ${numStr} %`]
+        // 2. Check Database (PostgreSQL) as fallback
+        if (!foundLocally || dbLawFilter) {
+          try {
+            let dbQuery = `SELECT fuente, materia, articulo, contenido FROM documents WHERE (articulo ILIKE $1 OR articulo ILIKE $2)`
+            let dbParams = [`%Artículo ${numStr}.%`, `%Artículo ${numStr} %`]
 
-          if (dbLawFilter) {
-            dbQuery += ` AND fuente ILIKE $3`
-            dbParams.push(`%${dbLawFilter}%`)
-          }
-
-          dbQuery += ` LIMIT 3`
-          const { rows } = await pool.query(dbQuery, dbParams)
-
-          for (const row of rows) {
-            if (!additionalContext.includes(row.contenido.substring(0, 50))) {
-              foundRelevantLaw = true
-              additionalContext += `\n\n**${row.fuente} (${row.materia.toUpperCase()})**\n\n**${row.articulo}:**\n> ${row.contenido.trim()}\n\n---`
+            if (dbLawFilter) {
+              dbQuery += ` AND fuente ILIKE $3`
+              dbParams.push(`%${dbLawFilter}%`)
             }
+
+            dbQuery += ` LIMIT 3`
+            const { rows } = await pool.query(dbQuery, dbParams)
+
+            for (const row of rows) {
+              if (!additionalContext.includes(row.contenido.substring(0, 50))) {
+                foundRelevantLaw = true
+                additionalContext += `\n\n**${row.fuente} (${row.materia.toUpperCase()})**\n\n**${row.articulo}:**\n> ${row.contenido.trim()}\n\n---`
+              }
+            }
+          } catch (dbErr) {
+            console.error("Error fetching article from DB:", dbErr)
           }
-        } catch (dbErr) {
-          console.error("Error fetching article from DB:", dbErr)
         }
       }
     }

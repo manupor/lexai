@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Plus, FileText, Settings, Briefcase, LayoutDashboard, Menu, X, MessageSquare, Scale } from "lucide-react"
+import { Plus, FileText, Settings, Briefcase, LayoutDashboard, Menu, X, MessageSquare, Scale, PenLine } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -86,6 +86,22 @@ export function DashboardSidebar({ userPlan = "FREE", sidebarOpen, setSidebarOpe
                                 >
                                     <FileText className="mr-2 h-4 w-4" />
                                     Documentos
+                                </Button>
+                            </Link>
+
+                            <Link href="/dashboard/documentos">
+                                <Button
+                                    variant={pathname.startsWith("/dashboard/documentos") || pathname.startsWith("/dashboard/editor") ? "default" : "ghost"}
+                                    className={cn(
+                                        "w-full justify-start transition-all",
+                                        pathname.startsWith("/dashboard/documentos") || pathname.startsWith("/dashboard/editor")
+                                            ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/50"
+                                            : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    )}
+                                    onClick={() => setSidebarOpen(false)}
+                                >
+                                    <PenLine className="mr-2 h-4 w-4" />
+                                    Editor Legal
                                 </Button>
                             </Link>
 

@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { Pool } from 'pg';
+import { neon } from '@neondatabase/serverless';
 
-export const maxDuration = 60; // Set timeout for API route
+export const maxDuration = 60;
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 export async function POST(req: Request) {
     try {
@@ -22,43 +21,45 @@ export async function POST(req: Request) {
         });
 
         if (!embeddingResponse.data || embeddingResponse.data.length === 0) {
-            throw new Error("No se pudo generar el embedding");
+            throw new Error('No se pudo generar el embedding');
         }
 
         const embedding = embeddingResponse.data[0].embedding;
-
-        // 2. Construir la consulta SQL para similitud del vector
-        let sql = `
-      SELECT 
-        id, 
-        fuente, 
-        materia, 
-        articulo, 
-        contenido, 
-        1 - (embedding <=> $1::vector) AS score
-      FROM documents
-    `;
-
-        // Convertir el embedding a string formatado de pgvector
         const embeddingStr = `[${embedding.join(',')}]`;
-        const params: any[] = [embeddingStr];
-        let paramIndex = 2;
 
-        // Si existen materias indicadas en el request, filtar
-        if (materias && materias.length > 0) {
-            sql += ` WHERE materia = ANY($${paramIndex}::text[])`;
-            params.push(materias);
-            paramIndex++;
+        const sql = neon(process.env.DATABASE_URL!);
+
+        // 2. Búsqueda vectorial con filtro opcional de materias
+        let rows: any[];
+
+        if (materias && Array.isArray(materias) && materias.length > 0) {
+            rows = await sql`
+                SELECT
+                    fuente,
+                    materia,
+                    articulo,
+                    contenido,
+                    1 - (embedding <=> ${embeddingStr}::vector) AS score
+                FROM documents
+                WHERE materia = ANY(${materias}::text[])
+                ORDER BY embedding <=> ${embeddingStr}::vector
+                LIMIT ${topK}
+            `;
+        } else {
+            rows = await sql`
+                SELECT
+                    fuente,
+                    materia,
+                    articulo,
+                    contenido,
+                    1 - (embedding <=> ${embeddingStr}::vector) AS score
+                FROM documents
+                ORDER BY embedding <=> ${embeddingStr}::vector
+                LIMIT ${topK}
+            `;
         }
 
-        // Ordenar por similitud y limitar resultados
-        sql += ` ORDER BY embedding <=> $1::vector LIMIT $${paramIndex};`;
-        params.push(topK);
-
-        // 3. Ejecutar la búsqueda Vectorial
-        const result = await pool.query(sql, params);
-
-        return NextResponse.json({ results: result.rows });
+        return NextResponse.json({ results: rows });
     } catch (error) {
         console.error('Error en búsqueda de normativa (RAG vector similarity):', error);
         return NextResponse.json({ error: 'Error interno del servidor procesando busqueda vectorial' }, { status: 500 });

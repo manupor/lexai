@@ -291,44 +291,45 @@ export async function POST(request: NextRequest) {
     if (articleRefs.length > 0) {
       // Detect code in CURRENT message
       let currentMsgCode: string | null = null
+      let dbLawFilter: string | null = null
+
       if (/(procesal\s*penal|procesal\s*pp|cpp)/i.test(lowerQuery)) currentMsgCode = 'codigo-procesal-penal'
       else if (/(penal|c[oó]digo\s*penal|cp\b)/i.test(lowerQuery)) currentMsgCode = 'codigo-penal'
       else if (/(civil|c[oó]digo\s*civil|cc\b)/i.test(lowerQuery)) currentMsgCode = 'codigo-civil'
       else if (/(comercio|comercial)/i.test(lowerQuery)) currentMsgCode = 'codigo-comercio'
       else if (/(trabajo|laboral|patrono|empleado)/i.test(lowerQuery)) currentMsgCode = 'codigo-trabajo'
+      else if (/(lgap|administraci[oó]n\s*p[uú]blica)/i.test(lowerQuery)) dbLawFilter = 'Administración Pública'
+      else if (/(constituci[oó]n|carta\s*magna)/i.test(lowerQuery)) dbLawFilter = 'Constitución'
+      else if (/(tr[aá]nsito)/i.test(lowerQuery)) dbLawFilter = 'Tránsito'
 
       // Detect "Mode Litigante" (Drafting resources/exceptions)
       const isLitigantMode = /(recurso|apelaci[oó]n|excepci[oó]n|escrito|demanda|querella|formal)/i.test(lowerQuery)
 
       // Risk & Ambiguity Logic
-      if (articleRefs.length > 0 && !currentMsgCode && historyCodeName) {
+      if (articleRefs.length > 0 && !currentMsgCode && !dbLawFilter && historyCodeName) {
         // [SAAS SAFE MODE]
         contextualAlert = `ℹ️ **Confirmación Contextual**: LexAI ha detectado que anteriormente se discutía sobre el **${historyCodeName.replace('codigo-', '').replace('-', ' ').toUpperCase()}**. Para mayor seguridad, confirme si desea continuar con este código o consultar otro.`
 
-        // Internal Ambiguity Logging
-        try {
-          const { appendFileSync } = require('fs');
-          const logData = { timestamp: new Date().toISOString(), type: 'history_fallback', prevCode: historyCodeName, query: message };
-          appendFileSync('logs/ambiguity.log', JSON.stringify(logData) + '\n');
-        } catch (e) { }
-
         detectedCodeName = historyCodeName
       } else if (currentMsgCode) {
-        // Detected a code change - Flag Risk
-        if (historyCodeName && historyCodeName !== currentMsgCode) {
-          const isHighRiskPair = (historyCodeName.includes('penal') && currentMsgCode.includes('penal')) ||
-            (historyCodeName.includes('civil') && currentMsgCode.includes('procesal'));
-          confusionRisk = isHighRiskPair ? 'medio' : 'bajo';
-        }
         detectedCodeName = currentMsgCode
       }
 
-      console.log(`🔍 Buscando artículos: ${articleRefs.join(', ')} (Código: ${detectedCodeName || 'Todos'}, Riesgo: ${confusionRisk})`)
+      console.log(`🔍 Buscando artículos: ${articleRefs.join(', ')} (Código: ${detectedCodeName || 'Todos'}, DB Filter: ${dbLawFilter || 'No'})`)
 
-      // Litigant Mode override: If ambiguous but drafting, provide BOTH to be elegant
-      if (isLitigantMode && !currentMsgCode && articleRefs.length > 0) {
-        for (const num of articleRefs) {
-          const numStr = String(num);
+      // Logic to fetch from DB if detectedCodeName is NOT one of the local ones
+      // OR if we have a dbLawFilter
+      for (const num of articleRefs) {
+        const numStr = String(num);
+
+        // 1. Check local JSON codes
+        if (detectedCodeName) {
+          const article = searchLegalArticle(detectedCodeName, numStr)
+          if (article) {
+            foundRelevantLaw = true
+            additionalContext += `\n\n${formatArticleForChat(article, detectedCodeName)}\n`
+          }
+        } else if (!dbLawFilter) {
           for (const codeName of ALL_CODES) {
             const article = searchLegalArticle(codeName, numStr)
             if (article) {
@@ -337,25 +338,28 @@ export async function POST(request: NextRequest) {
             }
           }
         }
-      } else {
-        // Standard retrieval
-        for (const num of articleRefs) {
-          const numStr = String(num)
-          if (detectedCodeName) {
-            const article = searchLegalArticle(detectedCodeName, numStr)
-            if (article) {
+
+        // 2. Check Database (PostgreSQL) for other laws (LGAP, Constitution, etc.)
+        try {
+          let dbQuery = `SELECT fuente, materia, articulo, contenido FROM documents WHERE (articulo ILIKE $1 OR articulo ILIKE $2)`
+          let dbParams = [`%Artículo ${numStr}.%`, `%Artículo ${numStr} %`]
+
+          if (dbLawFilter) {
+            dbQuery += ` AND fuente ILIKE $3`
+            dbParams.push(`%${dbLawFilter}%`)
+          }
+
+          dbQuery += ` LIMIT 3`
+          const { rows } = await pool.query(dbQuery, dbParams)
+
+          for (const row of rows) {
+            if (!additionalContext.includes(row.contenido.substring(0, 50))) {
               foundRelevantLaw = true
-              additionalContext += `\n\n${formatArticleForChat(article, detectedCodeName)}\n`
-            }
-          } else {
-            for (const codeName of ALL_CODES) {
-              const article = searchLegalArticle(codeName, numStr)
-              if (article) {
-                foundRelevantLaw = true
-                additionalContext += `\n\n${formatArticleForChat(article, codeName)}\n`
-              }
+              additionalContext += `\n\n**${row.fuente} (${row.materia.toUpperCase()})**\n\n**${row.articulo}:**\n> ${row.contenido.trim()}\n\n---`
             }
           }
+        } catch (dbErr) {
+          console.error("Error fetching article from DB:", dbErr)
         }
       }
     }

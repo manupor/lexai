@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Send, Loader2, Scale, User, AlertCircle, ShieldCheck, Search, CheckCircle2 } from "lucide-react"
+import { Send, Loader2, Scale, User, AlertCircle, ShieldCheck, Search, CheckCircle2, Filter } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { VoiceInput } from "@/components/voice-input"
 import { VoiceModeToggle } from "@/components/voice-mode-toggle"
+import { motion, AnimatePresence } from "framer-motion"
+import { FiltroMaterias } from "./filtro-materias"
 
 interface Message {
   id: string
@@ -34,6 +36,8 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
   const [isLoading, setIsLoading] = useState(false)
   const [voiceMode, setVoiceMode] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [selectedMaterias, setSelectedMaterias] = useState<string[]>([])
+  const [showFilters, setShowFilters] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -110,6 +114,7 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
           message: input,
           conversationId,
           messages: messages,
+          materias: selectedMaterias,
         }),
       })
 
@@ -240,19 +245,25 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 overscroll-contain" ref={scrollRef}>
-        <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 overscroll-contain" ref={scrollRef}>
+        <div className="space-y-4 max-w-4xl mx-auto">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-6 sm:py-12 text-center px-3 sm:px-4">
-              <div className="relative mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-xl opacity-30 animate-pulse"></div>
-                <Scale className="relative h-14 w-14 sm:h-16 sm:w-16 text-blue-600 dark:text-blue-500" />
-              </div>
-              <h3 className="mb-3 text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Bienvenido a LexAI Costa Rica</h3>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-md">
-                Realiza consultas sobre leyes costarricenses, analiza documentos o genera opiniones legales.
+            <div className="flex flex-col items-center justify-center py-10 sm:py-20 text-center px-4">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="relative mb-8"
+              >
+                <div className="absolute inset-0 bg-blue-600 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                <Scale className="relative h-16 w-16 text-blue-600 dark:text-blue-500" />
+              </motion.div>
+              <h3 className="mb-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                ¿En qué puedo ayudarte hoy?
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-10">
+                Consulta leyes, analiza contratos o redacta documentos legales con IA.
               </p>
-              <div className="mt-6 sm:mt-8 grid gap-3 text-left w-full max-w-md px-2">
+              <div className="grid gap-3 w-full max-w-sm">
                 <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Ejemplos de consultas:</p>
                 <Button
                   variant="outline"
@@ -384,44 +395,85 @@ export function ChatInterface({ conversationId, initialMessages = [] }: ChatInte
         </div>
       </div>
 
-      <div className="border-t border-slate-200 dark:border-slate-800 p-3 sm:p-4 flex-shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-lg">
-        <form onSubmit={handleSubmit} className="flex gap-2 items-end">
-          <div className="flex gap-2">
-            <VoiceInput
-              onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
-              disabled={isLoading || isSpeaking}
-            />
-            <VoiceModeToggle
-              enabled={voiceMode}
-              onToggle={setVoiceMode}
-              disabled={isLoading || isSpeaking}
-            />
-          </div>
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={voiceMode ? "Modo voz activado..." : "Escribe tu consulta..."}
-            disabled={isLoading || isSpeaking}
-            className="flex-1 text-sm sm:text-base h-10 sm:h-11 rounded-xl border-slate-300 dark:border-slate-700 focus-visible:ring-blue-500"
-          />
-          <Button
-            type="submit"
-            disabled={isLoading || isSpeaking || !input.trim()}
-            size="default"
-            className="h-10 w-10 sm:h-11 sm:w-11 p-0 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
-          >
-            {isLoading || isSpeaking ? (
-              <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+      <div className="p-3 sm:p-4 md:p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800">
+        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, y: 10, height: 0 }}
+                className="overflow-hidden mb-2"
+              >
+                <FiltroMaterias selectedMaterias={selectedMaterias} onChange={setSelectedMaterias} />
+              </motion.div>
             )}
-          </Button>
+          </AnimatePresence>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center">
+              <Button
+                type="button"
+                variant={showFilters ? "secondary" : "ghost"}
+                size="icon"
+                onClick={() => setShowFilters(!showFilters)}
+                className={`h-12 w-12 rounded-2xl border transition-all shadow-sm flex-shrink-0 ${showFilters ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-800" : "bg-white border-slate-200 text-slate-500 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400"}`}
+                title="Filtrar materias"
+              >
+                <Filter className="h-5 w-5" />
+                {selectedMaterias.length > 0 && !showFilters && (
+                  <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-blue-600 border-2 border-white dark:border-slate-900" />
+                )}
+              </Button>
+              <div className="flex-1 relative flex items-center">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={voiceMode ? "Escuchando..." : "Haz una pregunta legal..."}
+                  disabled={isLoading || isSpeaking}
+                  className="w-full text-sm sm:text-base h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 pr-12 focus-visible:ring-blue-500 transition-all shadow-sm"
+                />
+                <div className="absolute right-1">
+                  <Button
+                    type="submit"
+                    disabled={isLoading || isSpeaking || !input.trim()}
+                    size="icon"
+                    className="h-10 w-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md disabled:bg-slate-200 dark:disabled:bg-slate-800"
+                  >
+                    {isLoading || isSpeaking ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-1">
+                <VoiceInput
+                  onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
+                  disabled={isLoading || isSpeaking}
+                />
+                <VoiceModeToggle
+                  enabled={voiceMode}
+                  onToggle={setVoiceMode}
+                  disabled={isLoading || isSpeaking}
+                />
+              </div>
+
+              {voiceMode && (
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tighter animate-pulse"
+                >
+                  Voz Activa
+                </motion.span>
+              )}
+            </div>
+          </div>
         </form>
-        {voiceMode && (
-          <p className="text-xs text-green-600 mt-2 text-center">
-            🎤 Modo conversación por voz activado
-          </p>
-        )}
       </div>
     </div>
   )

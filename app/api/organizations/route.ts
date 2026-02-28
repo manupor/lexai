@@ -25,12 +25,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'El identificador (slug) ya está en uso' }, { status: 400 })
         }
 
-        // Crear la organización y asignar al usuario
+        // Crear la organización, suscripción FREE y asignar al usuario
         const org = await prisma.organization.create({
             data: {
                 name,
                 slug,
-                plan: 'PROFESSIONAL' // Plan por defecto para beta
+                plan: 'FREE',
+                subscription: {
+                    create: {
+                        plan: 'FREE',
+                        status: 'ACTIVE',
+                        tokens: 100
+                    }
+                }
             }
         })
 

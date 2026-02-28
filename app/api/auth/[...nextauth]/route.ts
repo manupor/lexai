@@ -67,12 +67,12 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log('SignIn Request:', { userId: user.id, provider: account?.provider })
+      console.log('SignIn Request:', { email: user.email, provider: account?.provider })
       return true
     },
 
     async session({ session, token }) {
-      if (session.user && token) {
+      if (session.user) {
         session.user.id = token.id as string
         session.user.role = (token.role as any) || 'CLIENT'
         session.user.tokens = (token.tokens as number) || 0
@@ -82,15 +82,30 @@ export const authOptions: NextAuthOptions = {
     },
 
     async jwt({ token, user, trigger, session }) {
+      // Al iniciar sesión, el objeto 'user' está disponible
       if (user) {
         token.id = user.id
         token.role = user.role
         token.tokens = user.tokens
         token.organizationId = (user as any).organizationId
+      } else if (token.email) {
+        // Si no hay user (es una recarga), pero hay email, buscamos datos frescos si faltan
+        if (!token.id) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: token.email },
+            select: { id: true, role: true, tokens: true, organizationId: true }
+          })
+          if (dbUser) {
+            token.id = dbUser.id
+            token.role = dbUser.role
+            token.tokens = dbUser.tokens
+            token.organizationId = dbUser.organizationId
+          }
+        }
       }
 
-      // Manejar actualizaciones manuales de sesión si es necesario
-      if (trigger === 'update' && session) {
+      // Manejar actualizaciones manuales de sesión (ej. tras onboarding)
+      if (trigger === 'update' && session?.user) {
         return { ...token, ...session.user }
       }
 
@@ -99,28 +114,12 @@ export const authOptions: NextAuthOptions = {
   },
 
   events: {
+    async signIn({ user, account, profile, isNewUser }) {
+      console.log('✨ SignIn Event:', { email: user.email, isNewUser })
+    },
     async createUser({ user }) {
-      // Crear plan FREE para nuevos usuarios (incluyendo OAuth)
-      try {
-        await prisma.subscription.upsert({
-          where: { userId: user.id },
-          update: {},
-          create: {
-            userId: user.id,
-            plan: 'FREE',
-            status: 'ACTIVE',
-            tokens: 100,
-          }
-        })
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { tokens: 100 }
-        })
-      } catch (error) {
-        console.error('Error in createUser event:', error)
-      }
-    }
+      console.log('👤 Nuevo usuario creado en DB:', user.email)
+    },
   },
 
   pages: {

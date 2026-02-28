@@ -21,7 +21,6 @@ model User {
   image         String?   // Foto de perfil de OAuth
   role          UserRole  @default(CLIENT)
   tokens        Int       @default(0)
-  subscription  Subscription?
   conversations Conversation[]
   documents     Document[]
   accounts      Account[] // Para OAuth providers
@@ -44,10 +43,12 @@ model Organization {
   users       User[]
   conversations Conversation[]
   cases        Case[]
-  documents    Document[]
-  inviteCode   String   @unique @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  documents       Document[]
+  inviteCode      String           @unique @default(cuid())
+  gatewayCustomerId String?        @unique
+  subscription    Subscription?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model Account {
@@ -92,17 +93,17 @@ enum UserRole {
 }
 
 model Subscription {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan      SubscriptionPlan
-  status    SubscriptionStatus
-  tokens    Int
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  currentPeriodEnd     DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String            @id @default(cuid())
+  organizationId      String            @unique
+  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                SubscriptionPlan
+  status              SubscriptionStatus
+  tokens              Int               @default(0)
+  gateway             String?           @default("TILOPAY") // TILOPAY, PADDLE, etc
+  gatewaySubscriptionId String?         @unique
+  currentPeriodEnd    DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 }
 
 enum SubscriptionPlan {

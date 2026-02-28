@@ -181,6 +181,32 @@ function formatArticleForChat(article: { number: string; content: string }, code
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+
+    // --- PAYWALL CHECK (FOR AUTHENTICATED FIRMS) ---
+    if (session?.user?.organizationId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: session.user.organizationId },
+        include: { subscription: true }
+      })
+
+      if (org?.subscription) {
+        const sub = org.subscription
+        if (sub.status !== 'ACTIVE' && sub.plan !== 'FREE') {
+          return NextResponse.json(
+            { error: 'Tu suscripción está inactiva. Por favor visita el área de pagos.', redirect: '/pricing' },
+            { status: 403 }
+          )
+        }
+        if (sub.tokens <= 0 && sub.plan !== 'FREE') {
+          return NextResponse.json(
+            { error: 'Has agotado tus tokens mensuales. Contacta al administrador de tu firma.', redirect: '/pricing' },
+            { status: 403 }
+          )
+        }
+      }
+    }
+
     // Verificar que la API key esté configurada
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.includes('your-openai-api-key')) {
       return NextResponse.json(

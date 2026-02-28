@@ -1,2 +1,5 @@
-pymupdf
-tqdm
+openai>=1.0.0
+psycopg2-binary>=2.9.0
+pypdf>=6.0.0
+striprtf>=0.0.26
+python-docx>=1.1.0

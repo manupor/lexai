@@ -5,10 +5,10 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Scale, FileText, MessageSquare, Shield, Sparkles, Users } from "lucide-react";
+import { Scale, FileText, MessageSquare, Shield, Sparkles, Users, Menu, X } from "lucide-react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/hooks/use-language";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { AnimatedFeatureCard } from "@/components/animated-feature-card";
 import { AnimatedPricingCard } from "@/components/animated-pricing-card";
@@ -17,6 +17,7 @@ export default function Home() {
   const { data: session, status } = useSession()
   const { t } = useLanguage()
   const [scrollY, setScrollY] = useState(0)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
@@ -76,37 +77,82 @@ export default function Home() {
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
-            <Scale className="h-8 w-8 text-cyan-400" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">LexAI Costa Rica</span>
+            <Scale className="h-7 w-7 sm:h-8 sm:w-8 text-cyan-400" />
+            <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">LexAI</span>
           </motion.div>
-          <nav className="flex items-center gap-4">
+
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="#features" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Funciones</Link>
+            <Link href="#pricing" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Precios</Link>
             <LanguageToggle />
             {session ? (
-              <>
-                <Link href="/dashboard">
-                  <Button variant="ghost" className="text-white hover:text-cyan-200 hover:bg-white/10">{t.dashboard.title}</Button>
-                </Link>
-                <Link href="/dashboard">
-                  <Avatar className="h-9 w-9 cursor-pointer">
-                    <AvatarImage src={session.user?.image || undefined} alt={session.user?.name || ''} />
-                    <AvatarFallback className="bg-blue-600 text-white text-sm">
-                      {getInitials(session.user?.name || 'U')}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
-              </>
+              <Link href="/dashboard">
+                <Button variant="outline" className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10">Ir al Dashboard</Button>
+              </Link>
             ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" className="text-white hover:text-cyan-200 hover:bg-white/10">{t.home.cta}</Button>
+              <div className="flex items-center gap-4">
+                <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white">Log in</Link>
+                <Link href="/register">
+                  <Button className="bg-cyan-600 hover:bg-cyan-700">Comenzar Gratis</Button>
                 </Link>
-                <Link href="/login">
-                  <Button>{t.home.cta}</Button>
-                </Link>
-              </>
+              </div>
             )}
           </nav>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-3">
+            <LanguageToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: "100%" }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-0 z-[60] bg-slate-950 flex flex-col p-6 md:hidden"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <div className="flex items-center gap-2">
+                  <Scale className="h-8 w-8 text-cyan-400" />
+                  <span className="text-2xl font-bold text-white">LexAI</span>
+                </div>
+                <Button variant="ghost" size="icon" className="text-white" onClick={() => setMobileMenuOpen(false)}>
+                  <X className="h-8 w-8" />
+                </Button>
+              </div>
+
+              <div className="flex flex-col gap-8 items-center text-center">
+                <Link href="#features" className="text-2xl font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>Funciones</Link>
+                <Link href="#pricing" className="text-2xl font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>Precios</Link>
+                <div className="h-px w-20 bg-white/10 my-4" />
+                {session ? (
+                  <Link href="/dashboard" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full text-lg h-14 bg-cyan-600">Ir al Dashboard</Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/login" className="text-xl text-slate-400" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
+                    <Link href="/register" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full text-lg h-14 bg-cyan-600">Comenzar Gratis</Button>
+                    </Link>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
 
       {/* Hero Section */}

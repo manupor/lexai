@@ -43,17 +43,7 @@ export async function POST(request: NextRequest) {
                 email: email.toLowerCase(),
                 password: hashedPassword,
                 role: 'CLIENT',
-                tokens: 100, // Tokens iniciales del plan FREE
-                subscription: {
-                    create: {
-                        plan: 'FREE',
-                        status: 'ACTIVE',
-                        tokens: 100,
-                    }
-                }
-            },
-            include: {
-                subscription: true
+                tokens: 100,
             }
         })
 

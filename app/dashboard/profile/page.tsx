@@ -14,11 +14,15 @@ export default async function ProfilePage() {
         redirect('/login')
     }
 
-    // Obtener datos completos del usuario
+    // Obtener datos completos del usuario y su organización
     const user = await prisma.user.findUnique({
         where: { email: session.user.email },
         include: {
-            subscription: true,
+            organization: {
+                include: {
+                    subscription: true
+                }
+            },
             conversations: {
                 take: 10,
                 orderBy: { createdAt: 'desc' }
@@ -74,12 +78,12 @@ export default async function ProfilePage() {
                         />
 
                         <SubscriptionCard
-                            plan={user.subscription?.plan || 'FREE'}
-                            status={user.subscription?.status || 'ACTIVE'}
-                            tokens={user.tokens}
-                            maxTokens={user.subscription?.tokens || 100}
-                            currentPeriodEnd={user.subscription?.currentPeriodEnd}
-                            stripeCustomerId={user.subscription?.stripeCustomerId}
+                            plan={user.organization?.subscription?.plan || 'FREE'}
+                            status={user.organization?.subscription?.status || 'ACTIVE'}
+                            tokens={user.organization?.subscription?.tokens || 0}
+                            maxTokens={user.organization?.subscription?.plan === 'PROFESSIONAL' ? 5000 : 100}
+                            currentPeriodEnd={user.organization?.subscription?.currentPeriodEnd}
+                            gatewayCustomerId={user.organization?.gatewayCustomerId}
                         />
                     </div>
 

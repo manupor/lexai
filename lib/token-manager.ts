@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 
-// Token limits por plan
+// Token limits por plan (ahora por FIRMA)
 export const TOKEN_LIMITS = {
   FREE: 100,
   BASIC: 1000,
@@ -16,12 +16,19 @@ export const CONVERSATION_LIMITS = {
   ENTERPRISE: -1, // ilimitado
 }
 
+/**
+ * Obtiene los tokens disponibles para la firma a la que pertenece el usuario
+ */
 export async function getUserTokens(userId: string) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        subscription: true,
+        organization: {
+          include: {
+            subscription: true,
+          }
+        },
       },
     })
 
@@ -29,20 +36,23 @@ export async function getUserTokens(userId: string) {
       throw new Error('Usuario no encontrado')
     }
 
-    // Si tiene suscripción activa, usar tokens de suscripción
-    if (user.subscription && user.subscription.status === 'ACTIVE') {
+    // Si pertenece a una organización, usar sus tokens
+    if (user.organization?.subscription) {
+      const sub = user.organization.subscription
       return {
-        tokensAvailable: user.subscription.tokens,
-        plan: user.subscription.plan,
-        isSubscribed: true,
+        tokensAvailable: sub.tokens,
+        plan: sub.plan,
+        isSubscribed: sub.plan !== 'FREE',
+        organizationId: user.organizationId
       }
     }
 
-    // Usuario gratuito
+    // Fallback para usuarios sin organización (legacy o nuevos)
     return {
       tokensAvailable: user.tokens,
       plan: 'FREE' as const,
       isSubscribed: false,
+      organizationId: null
     }
   } catch (error) {
     console.error('Error getting user tokens:', error)
@@ -50,12 +60,19 @@ export async function getUserTokens(userId: string) {
   }
 }
 
+/**
+ * Deduce tokens del balance de la firma
+ */
 export async function deductTokens(userId: string, tokensUsed: number) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        subscription: true,
+        organization: {
+          include: {
+            subscription: true
+          }
+        }
       },
     })
 
@@ -63,21 +80,21 @@ export async function deductTokens(userId: string, tokensUsed: number) {
       throw new Error('Usuario no encontrado')
     }
 
-    // Si tiene suscripción activa, descontar de suscripción
-    if (user.subscription && user.subscription.status === 'ACTIVE') {
+    // Si tiene organización y suscripción, descontar de ahí
+    if (user.organization?.subscription) {
       await prisma.subscription.update({
-        where: { id: user.subscription.id },
+        where: { id: user.organization.subscription.id },
         data: {
-          tokens: Math.max(0, user.subscription.tokens - tokensUsed),
-        },
+          tokens: { decrement: tokensUsed }
+        }
       })
     } else {
-      // Usuario gratuito, descontar de tokens de usuario
+      // Descontar de tokens individuales (legacy/free)
       await prisma.user.update({
         where: { id: userId },
         data: {
-          tokens: Math.max(0, user.tokens - tokensUsed),
-        },
+          tokens: { decrement: tokensUsed }
+        }
       })
     }
 
@@ -88,18 +105,21 @@ export async function deductTokens(userId: string, tokensUsed: number) {
   }
 }
 
+/**
+ * Verifica si la firma tiene tokens suficientes
+ */
 export async function checkTokenLimit(userId: string, tokensNeeded: number = 0) {
   try {
     const { tokensAvailable, plan } = await getUserTokens(userId)
-    
+
     if (tokensAvailable < tokensNeeded) {
       return {
         allowed: false,
         tokensAvailable,
         plan,
-        message: plan === 'FREE' 
+        message: plan === 'FREE'
           ? 'Has agotado tus tokens gratuitos. Suscríbete para continuar consultando.'
-          : 'Has agotado tus tokens. Por favor renueva tu suscripción.',
+          : 'Has agotado los tokens de tu firma. Por favor renueva tu suscripción.',
       }
     }
 
@@ -114,98 +134,52 @@ export async function checkTokenLimit(userId: string, tokensNeeded: number = 0) 
   }
 }
 
+/**
+ * Verifica límites de conversaciones (ahora por organización si aplica)
+ */
 export async function checkConversationLimit(userId: string) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        subscription: true,
-        conversations: {
-          orderBy: { createdAt: 'desc' },
-        },
+        organization: {
+          include: {
+            subscription: true,
+          }
+        }
       },
     })
 
-    if (!user) {
-      throw new Error('Usuario no encontrado')
-    }
+    if (!user) throw new Error('Usuario no encontrado')
 
-    const plan = (user.subscription?.plan || 'FREE') as keyof typeof CONVERSATION_LIMITS
+    const plan = (user.organization?.subscription?.plan || 'FREE') as keyof typeof CONVERSATION_LIMITS
     const limit = CONVERSATION_LIMITS[plan]
-    const currentCount = user.conversations.length
 
-    // Si es ilimitado (-1), siempre permitir
-    if (limit === -1) {
-      return {
-        allowed: true,
-        currentCount,
-        limit: -1,
-        plan,
-      }
-    }
+    // Contar conversaciones del usuario (o de la organización si quisiéramos límite global)
+    // Por ahora mantenemos límite por usuario para no castigar a equipos grandes en FREE
+    const currentCount = await prisma.conversation.count({
+      where: { userId: userId }
+    })
 
-    // Verificar si ha alcanzado el límite
+    if (limit === -1) return { allowed: true, currentCount, limit, plan }
+
     if (currentCount >= limit) {
       return {
         allowed: false,
         currentCount,
         limit,
         plan,
-        message: 'Has alcanzado el límite de conversaciones para el plan gratuito. Suscríbete para conversaciones ilimitadas.',
+        message: 'Límite de conversaciones alcanzado para este plan.',
       }
     }
 
-    return {
-      allowed: true,
-      currentCount,
-      limit,
-      plan,
-    }
+    return { allowed: true, currentCount, limit, plan }
   } catch (error) {
     console.error('Error checking conversation limit:', error)
     throw error
   }
 }
 
-// Limpiar conversaciones antiguas si excede el límite (solo para FREE)
-export async function cleanupOldConversations(userId: string) {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        subscription: true,
-        conversations: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
-
-    if (!user) return
-
-    const plan = (user.subscription?.plan || 'FREE') as keyof typeof CONVERSATION_LIMITS
-    const limit = CONVERSATION_LIMITS[plan]
-
-    // Solo limpiar para usuarios FREE
-    if (plan !== 'FREE' || limit === -1) return
-
-    const conversations = user.conversations
-    if (conversations.length > limit) {
-      // Eliminar las conversaciones más antiguas
-      const toDelete = conversations.slice(limit)
-      await prisma.conversation.deleteMany({
-        where: {
-          id: {
-            in: toDelete.map((c: { id: string }) => c.id),
-          },
-        },
-      })
-    }
-  } catch (error) {
-    console.error('Error cleaning up conversations:', error)
-  }
-}
-
-// Inicializar tokens para nuevo usuario
 export async function initializeUserTokens(userId: string) {
   try {
     await prisma.user.update({

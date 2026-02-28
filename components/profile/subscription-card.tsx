@@ -14,7 +14,7 @@ interface SubscriptionCardProps {
     tokens: number
     maxTokens: number
     currentPeriodEnd?: Date | null
-    stripeCustomerId?: string | null
+    gatewayCustomerId?: string | null
 }
 
 export default function SubscriptionCard({
@@ -23,7 +23,7 @@ export default function SubscriptionCard({
     tokens,
     maxTokens,
     currentPeriodEnd,
-    stripeCustomerId
+    gatewayCustomerId
 }: SubscriptionCardProps) {
     const tokenPercentage = (tokens / maxTokens) * 100
     const isLow = tokenPercentage < 20
@@ -60,24 +60,10 @@ export default function SubscriptionCard({
 
     const handleManageSubscription = async () => {
         if (isFree) {
-            // Redirigir a página de pricing
             window.location.href = '/pricing'
         } else {
-            // Abrir portal de Stripe
-            try {
-                const response = await fetch('/api/stripe/create-portal-session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ customerId: stripeCustomerId })
-                })
-                const data = await response.json()
-                if (data.url) {
-                    window.location.href = data.url
-                }
-            } catch (error) {
-                console.error('Error opening portal:', error)
-                alert('Error al abrir el portal de suscripción')
-            }
+            // Tilopay management logic or generic message
+            alert('Para gestionar tu suscripción de Tilopay, contacta a soporte o visita el portal de Tilopay.')
         }
     }
 

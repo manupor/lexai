@@ -354,11 +354,12 @@ export async function POST(request: NextRequest) {
         // 2. Check Database (PostgreSQL) as fallback
         if (!foundLocally || dbLawFilter) {
           try {
-            let dbQuery = `SELECT fuente, materia, articulo, contenido FROM documents WHERE (articulo ILIKE $1 OR articulo ILIKE $2)`
-            let dbParams = [`%Artículo ${numStr}.%`, `%Artículo ${numStr} %`]
+            // Using Regex in Postgres to match "articulo 45", "ARTICULO 45.", "Artículo 45" (ignoring accents and case)
+            let dbQuery = `SELECT fuente, materia, articulo, contenido FROM documents WHERE articulo ~* ('art[íi]culo\\s*' || $1 || '($|[^0-9])')`
+            let dbParams = [numStr]
 
             if (dbLawFilter) {
-              dbQuery += ` AND fuente ILIKE $3`
+              dbQuery += ` AND fuente ILIKE $2`
               dbParams.push(`%${dbLawFilter}%`)
             }
 
@@ -368,6 +369,7 @@ export async function POST(request: NextRequest) {
             for (const row of rows) {
               if (!additionalContext.includes(row.contenido.substring(0, 50))) {
                 foundRelevantLaw = true
+                foundLocally = true
                 additionalContext += `\n\n**${row.fuente} (${row.materia.toUpperCase()})**\n\n**${row.articulo}:**\n> ${row.contenido.trim()}\n\n---`
               }
             }
